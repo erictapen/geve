@@ -1,22 +1,32 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 import Graphics.Svg
+import Data.Text
+
+showI :: Int -> Text
+showI i = pack (show i)
 
 svg :: Element -> Element
 svg content =
      doctype
-  <> with (svg11_ content) [Version_ <<- "1.1", Width_ <<- "482", Height_ <<- "340"]
+  <> with (svg11_ content) [Version_ <<- "1.1", Width_ <<- "200", Height_ <<- "200"]
 
-logo :: RealFloat a => a -> Element
-logo pos = 
-    g_ [Transform_ <<- translate pos 0] 
-        (path_ [ Fill_ <<- "#000000"
-            , D_ <<- ( mA 0 340 <> lA 113 170 <> lA 0 0 <> lA 85 0
-                <> lA 198 170 <> lA 85 340 <> lA 0 340 <> z <> mA 0 340 ) ])
+-- 30*30
+basicRect :: (Int, Int) -> Element
+basicRect (x, y) = rect_ [
+    X_ <<- showI x,
+    Y_ <<- showI y,
+    Width_ <<- "30",
+    Height_ <<- "30",
+    Fill_ <<- "none",
+    Stroke_ <<- "black" ]
 
-chain :: RealFloat a => [a] -> Element
-chain positions = mconcat (map (\pos -> g_ [Transform_ <<- translate pos 0] (logo 100)) positions)
+basicRectGrid :: Element
+basicRectGrid = mconcat $
+    Prelude.map basicRect [ (x,y) | x<-[ 10, 50, 90, 130 ], y<-[ 10, 50, 90, 130 ] ]
 
 main :: IO ()
 main = do
-    print $ svg $ chain [ 0, 100, 200, 300, 400, 500, 600 ]
+    print $ svg $
+        basicRectGrid
+
