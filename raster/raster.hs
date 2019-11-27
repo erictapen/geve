@@ -7,6 +7,9 @@ import Prelude as P
 showI :: Int -> Text
 showI i = pack (show i)
 
+showR :: (Show a, RealFloat a) => a -> Text
+showR r = pack (show r)
+
 svg :: Element -> Element
 svg content =
      doctype
@@ -34,13 +37,28 @@ mask = path_
             <> z
             <> " "
             <> (mconcat $ P.map maskSegment boxCoordinates)
-        ) 
+        )
         , Stroke_ <<- "none"
         , Fill_ <<- "white"
         , Style_ <<- "fill-rule:evenodd"
     ]
 
+quadRasterPoint :: (Show a, RealFloat a) => (a, a) -> Element
+quadRasterPoint (x, y) = circle_ [
+        Cx_ <<- showR x
+        , Cy_ <<- showR y
+        , R_ <<- (showR $ (*) 0.1 $ sqrt $ x**2 + y**2)
+    ]
+
+quadRaster :: (Show a, RealFloat a) => (a, a) -> Element
+quadRaster (x, y) = g_ [
+        X_ <<- showR x
+        , Y_ <<- showR y
+    ] $ mconcat $ P.map quadRasterPoint [ (x,y) | x<-[ 10, 20, 30 ], y<-[ 10, 20, 30 ] ]
+
 main :: IO ()
 main = do
-    print $ svg $ circle_ [ R_ <<- "200", Fill_ <<- "blue" ] <> mask  
+    print $ svg $ 
+        quadRaster (10, 10)
+        <> mask
 
