@@ -47,14 +47,14 @@ quadRasterPoint :: (Show a, RealFloat a) => (a, a) -> Element
 quadRasterPoint (x, y) = circle_ [
         Cx_ <<- showR x
         , Cy_ <<- showR y
-        , R_ <<- (showR $ (*) 0.1 $ sqrt $ x**2 + y**2)
+        , R_ <<- (showR $ (*) 0.01 $ sqrt $ x**2 + y**2)
     ]
 
 quadRaster :: (Show a, RealFloat a) => (a, a) -> Element
 quadRaster (x, y) = g_ [
         X_ <<- showR x
         , Y_ <<- showR y
-    ] $ mconcat $ P.map quadRasterPoint [ (x,y) | x<-[ 10, 20, 30 ], y<-[ 10, 20, 30 ] ]
+    ] $ mconcat $ P.map quadRasterPoint [ (x,y) | x<-[ 1,2..45 ], y<-[ 1,2..45 ] ]
 
 main :: IO ()
 main = do
