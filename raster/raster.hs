@@ -53,7 +53,7 @@ quadRasterPoint factor (x, y) = circle_ [
 quadRaster :: (Enum a, Show a, RealFloat a) => a -> (a, a) -> Element
 quadRaster stepsize (x, y) = g_ [
             Transform_ <<- translate x y
-        ] $ mconcat $ P.map (quadRasterPoint 0.015) coordSpace
+        ] $ mconcat $ P.map (quadRasterPoint (0.015 * stepsize)) coordSpace
     where
         range = enumFromThenTo 1 (1+stepsize) 31
         coordSpace = [ (x,y) | x<-range, y<-range ]
