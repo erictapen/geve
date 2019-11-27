@@ -43,22 +43,39 @@ mask = path_
         , Style_ <<- "fill-rule:evenodd"
     ]
 
-quadRasterPoint :: (Show a, RealFloat a) => (a, a) -> Element
-quadRasterPoint (x, y) = circle_ [
+quadRasterPoint :: (Show a, RealFloat a) => a -> (a, a) -> Element
+quadRasterPoint factor (x, y) = circle_ [
         Cx_ <<- showR x
         , Cy_ <<- showR y
-        , R_ <<- (showR $ (*) 0.01 $ sqrt $ x**2 + y**2)
+        , R_ <<- (showR $ (*) factor $ sqrt $ x**2 + y**2)
     ]
 
-quadRaster :: (Show a, RealFloat a) => (a, a) -> Element
-quadRaster (x, y) = g_ [
-        X_ <<- showR x
-        , Y_ <<- showR y
-    ] $ mconcat $ P.map quadRasterPoint [ (x,y) | x<-[ 1,2..45 ], y<-[ 1,2..45 ] ]
+quadRaster :: (Enum a, Show a, RealFloat a) => a -> (a, a) -> Element
+quadRaster stepsize (x, y) = g_ [
+            Transform_ <<- translate x y
+        ] $ mconcat $ P.map (quadRasterPoint 0.015) coordSpace
+    where
+        range = enumFromThenTo 1 (1+stepsize) 31
+        coordSpace = [ (x,y) | x<-range, y<-range ]
 
 main :: IO ()
 main = do
     print $ svg $ 
-        quadRaster (10, 10)
+           quadRaster 1   ( 10,  10)
+        <> quadRaster 1.1 ( 50,  10)
+        <> quadRaster 1.2 ( 90,  10)
+        <> quadRaster 1.3 (130,  10)
+        <> quadRaster 1.4 ( 10,  50)
+        <> quadRaster 1.5 ( 50,  50)
+        <> quadRaster 1.6 ( 90,  50)
+        <> quadRaster 1.7 (130,  50)
+        <> quadRaster 1.8 ( 10,  90)
+        <> quadRaster 1.9 ( 50,  90)
+        <> quadRaster 2.0 ( 90,  90)
+        <> quadRaster 2.1 (130,  90)
+        <> quadRaster 2.2 ( 10, 130)
+        <> quadRaster 2.3 ( 50, 130)
+        <> quadRaster 2.4 ( 90, 130)
+        <> quadRaster 2.5 (130, 130)
         <> mask
 
