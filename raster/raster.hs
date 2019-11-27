@@ -23,7 +23,9 @@ maskSegment (x, y) = mA x y
     <> lA x y
     <> z
 
-boxCoordinates = [ (x,y) | x<-[ 10, 50, 90, 130 ], y<-[ 10, 50, 90, 130 ] ]
+boxCoordinates = [ (x,y) | y<-range, x<-range ]
+    where
+        range = [ 15, 50 .. 155 ]
 
 mask :: Element
 mask = path_
@@ -50,32 +52,16 @@ quadRasterPoint factor (x, y) = circle_ [
         , R_ <<- (showR $ (*) factor $ sqrt $ x**2 + y**2)
     ]
 
-quadRaster :: (Enum a, Show a, RealFloat a) => a -> (a, a) -> Element
-quadRaster stepsize (x, y) = g_ [
+quadRaster :: (Enum a, Show a, RealFloat a) => (a, (a, a)) -> Element
+quadRaster (stepsize, (x, y)) = g_ [
             Transform_ <<- translate x y
         ] $ mconcat $ P.map (quadRasterPoint (0.015 * stepsize)) coordSpace
     where
-        range = enumFromThenTo 1 (1+stepsize) 31
+        range = [ 1, (1+stepsize) .. 31 ]
         coordSpace = [ (x,y) | x<-range, y<-range ]
 
 main :: IO ()
 main = do
-    print $ svg $ 
-           quadRaster 1   ( 10,  10)
-        <> quadRaster 1.1 ( 50,  10)
-        <> quadRaster 1.2 ( 90,  10)
-        <> quadRaster 1.3 (130,  10)
-        <> quadRaster 1.4 ( 10,  50)
-        <> quadRaster 1.5 ( 50,  50)
-        <> quadRaster 1.6 ( 90,  50)
-        <> quadRaster 1.7 (130,  50)
-        <> quadRaster 1.8 ( 10,  90)
-        <> quadRaster 1.9 ( 50,  90)
-        <> quadRaster 2.0 ( 90,  90)
-        <> quadRaster 2.1 (130,  90)
-        <> quadRaster 2.2 ( 10, 130)
-        <> quadRaster 2.3 ( 50, 130)
-        <> quadRaster 2.4 ( 90, 130)
-        <> quadRaster 2.5 (130, 130)
+    print $ svg $ (mconcat $ P.map quadRaster $ P.zip [ 1.0,1.1..3.4 ] boxCoordinates)
         <> mask
 
