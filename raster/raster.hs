@@ -45,8 +45,8 @@ mask = path_
         , Style_ <<- "fill-rule:evenodd"
     ]
 
-quadRasterPoint :: (Show a, RealFloat a) => a -> (a, a) -> Element
-quadRasterPoint factor (x, y) = circle_ [
+rasterCircle :: (Show a, RealFloat a) => a -> (a, a) -> Element
+rasterCircle factor (x, y) = circle_ [
         Cx_ <<- showR x
         , Cy_ <<- showR y
         , R_ <<- (showR $ (*) factor $ sqrt $ x**2 + y**2)
@@ -55,13 +55,29 @@ quadRasterPoint factor (x, y) = circle_ [
 quadRaster :: (Enum a, Show a, RealFloat a) => (a, (a, a)) -> Element
 quadRaster (stepsize, (x, y)) = g_ [
             Transform_ <<- translate x y
-        ] $ mconcat $ P.map (quadRasterPoint (0.015 * stepsize)) coordSpace
+        ] $ mconcat $ P.map (rasterCircle (0.015 * stepsize)) coordSpace
     where
         range = [ 1, (1+stepsize) .. 31 ]
         coordSpace = [ (x,y) | x<-range, y<-range ]
 
+hexRaster :: (Enum a, Show a, RealFloat a) => (a, (a, a)) -> Element
+hexRaster (size, (x, y)) = g_ [
+            Transform_ <<- translate x y
+        ] $ mconcat $ P.map (rasterCircle (0.015 * size)) coordSpace
+    where
+        xrange1 = [ 0, size .. 31 ]
+        xrange2 = [ (0.5 * size), (1.5 * size) .. 31 ]
+        yrange1 = [ (0.5 * size), (2.0 * size) .. 31 ]
+        yrange2 = [ (1.25 * size), (2.75 * size) .. 31 ]
+        coordSpace = [ (x,y) | x<-xrange1, y<-yrange1 ] ++ [ (x,y) | x<-xrange2, y<-yrange2 ]
+
+quadRasterResult :: Element
+quadRasterResult = svg $ (mconcat $ P.map quadRaster $ P.zip [ 1.0,1.1..3.4 ] boxCoordinates) <> mask
+
+hexRasterResult :: Element
+hexRasterResult = svg $ (mconcat $ P.map hexRaster $ P.zip (P.take 25 [ 1.0,1.05.. ]) boxCoordinates) <> mask
+
 main :: IO ()
 main = do
-    print $ svg $ (mconcat $ P.map quadRaster $ P.zip [ 1.0,1.1..3.4 ] boxCoordinates)
-        <> mask
+    print hexRasterResult
 
