@@ -13,8 +13,8 @@ svg content =
   <> with (svg11_ content) [ Version_ <<- "1.1", Width_ <<- "200", Height_ <<- "200" ]
 
 -- 30*30
-basicRect :: RealFloat a => (a, a) -> Element
-basicRect (x, y) = g_ [
+basicRect :: RealFloat a => Element -> (a, a) -> Element
+basicRect el (x, y) = g_ [
         Transform_ <<- translate x y
     ]
     $ rect_ [
@@ -22,11 +22,13 @@ basicRect (x, y) = g_ [
         Height_ <<- "30",
         Fill_ <<- "none",
         Stroke_ <<- "black" 
-    ]
+    ] <> el
 
 basicRectGrid :: Element
 basicRectGrid = mconcat $
-    P.map basicRect [ (x,y) | x<-[ 10, 50, 90, 130 ], y<-[ 10, 50, 90, 130 ] ]
+    P.map
+        (basicRect $ circle_ [ R_ <<- "10", Fill_ <<- "none", Stroke_ <<- "black" ])
+        [ (x,y) | x<-[ 10, 50, 90, 130 ], y<-[ 10, 50, 90, 130 ] ]
 
 main :: IO ()
 main = do
