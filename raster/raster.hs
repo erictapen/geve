@@ -13,25 +13,42 @@ svg content =
   <> with (svg11_ content) [ Version_ <<- "1.1", Width_ <<- "200", Height_ <<- "200" ]
 
 -- 30*30
-basicRect :: RealFloat a => Element -> (a, a) -> Element
-basicRect el (x, y) = g_ [
-        Transform_ <<- translate x y
-    ]
-    $ rect_ [
+basicMask :: (Int, Int) -> Element
+basicMask (x, y) = rect_ [
+        X_ <<- (showI x),
+        Y_ <<- (showI y),
         Width_ <<- "30",
         Height_ <<- "30",
-        Fill_ <<- "none",
-        Stroke_ <<- "black" 
-    ] <> el
+        Fill_ <<- "white",
+        Stroke_ <<- "none" 
+    ]
 
+-- mask which consists of regular masks, made to create "windows"
 basicRectGrid :: Element
-basicRectGrid = mconcat $
-    P.map
-        (basicRect $ circle_ [ R_ <<- "10", Fill_ <<- "none", Stroke_ <<- "black" ])
-        [ (x,y) | x<-[ 10, 50, 90, 130 ], y<-[ 10, 50, 90, 130 ] ]
+basicRectGrid = mask_ [ Id_ <<- "myMask" ] $
+    rect_ [
+        X_ <<- "0",
+        Y_ <<- "0",
+        Width_ <<- "200",
+        Height_ <<- "200",
+        Fill_ <<- "white"
+    ]
+    <> (mconcat $
+        P.map
+            basicMask
+            [ (x,y) | x<-[ 10, 50, 90, 130 ], y<-[ 10, 50, 90, 130 ] ])
+
+maskFront :: Element
+maskFront = rect_ [
+        X_ <<- "0",
+        Y_ <<- "0",
+        Width_ <<- "200",
+        Height_ <<- "200",
+        Fill_ <<- "none"
+        -- Mask_ <<- "url(#myMask)"
+    ]
 
 main :: IO ()
 main = do
-    print $ svg $
-        basicRectGrid
+    print $ svg $ basicRectGrid <> circle_ [ R_ <<- "200" ] <> maskFront
 
