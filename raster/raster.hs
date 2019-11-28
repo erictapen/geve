@@ -81,40 +81,44 @@ hexRasterResult = svg $ (mconcat $ P.map hexRaster $ P.zip (P.take 25 [ 1.0,1.05
 
 
 triangleDot :: (Show a, RealFloat a) => a -> (a, a) -> Element
-triangleDot factor (x, y) = path_ [
-        D_ <<- if (size < factor) then (
+triangleDot size (x, y) = path_ [
+        D_ <<- if (f < size) then (
+            -- white square with a black triangle
             mA x y
-            <> lA (x + size) y
-            <> lA x (y + size)
+            <> lA (x + f) y
+            <> lA x (y + f)
             <> lA x y
             <> z
         ) else (
+            -- black square with a white triangle cut out
             mA x y
-            <> lA (x + factor) y
-            <> lA (x + factor) (y + size)
-            <> lA (x + size) (y + factor)
-            <> lA x (y + factor)
+            <> lA (x + size) y
+            <> lA (x + size) (y + f')
+            <> lA (x + f') (y + size)
+            <> lA x (y + size)
             <> lA x y
             <> z
         )
         , Fill_ <<- "black"
-        , Stroke_ <<- "none"
+        , Stroke_ <<- "black"
+        , Stroke_width_ <<- "0.01px"
     ]
     where
-        size = (*) factor $ sqrt $ x**2 + y**2
+        f = (*) (0.053 * size) $ sqrt $ x**2 + y**2
+        f' = f - size
 
-fractalRaster :: (Enum a, Show a, RealFloat a) => (a, (a, a)) -> Element
-fractalRaster (size, (x, y)) = g_ [
+triangleRaster :: (Enum a, Show a, RealFloat a) => (a, (a, a)) -> Element
+triangleRaster (size, (x, y)) = g_ [
             Transform_ <<- translate x y
-        ] $ mconcat $ P.map (triangleDot (0.05 * size)) coordSpace
+        ] $ mconcat $ P.map (triangleDot size) coordSpace
     where
         range = [ 1, (1+size) .. 31 ]
         coordSpace = [ (x,y) | x<-range, y<-range ]
 
-fractalRasterResult :: Element
-fractalRasterResult = svg $ (mconcat $ P.map fractalRaster $ P.zip (P.take 25 [ 1.0,1.05.. ]) boxCoordinates) <> mask
+triangleRasterResult :: Element
+triangleRasterResult = svg $ (mconcat $ P.map triangleRaster $ P.zip (P.take 25 [ 1.0,1.05.. ]) boxCoordinates) <> mask
 
 main :: IO ()
 main = do
-    print fractalRasterResult
+    print triangleRasterResult
 
