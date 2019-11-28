@@ -1,5 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
+module Raster where
+
 import Graphics.Svg
 import Data.Text
 import Prelude as P
@@ -130,10 +132,4 @@ triangleRaster (size, (x, y)) = clipPath <> (g_ [
 
 triangleRasterResult :: Element
 triangleRasterResult = svg $ (mconcat $ P.map triangleRaster $ P.zip (P.take 25 [ 1.0,1.20.. ]) boxCoordinates)
-
-main :: IO ()
-main = do
-    -- print quadRasterResult
-    -- print hexRasterResult
-    print triangleRasterResult
 
