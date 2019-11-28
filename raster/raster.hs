@@ -18,35 +18,18 @@ svg content =
      doctype
   <> with (svg11_ content) [ Version_ <<- "1.1", Width_ <<- "200", Height_ <<- "200" ]
 
-maskSegment :: RealFloat a => (a, a) -> Text
-maskSegment (x, y) = mA x y
-    <> lA x (y+30)
-    <> lA (x+30) (y+30)
-    <> lA (x+30) y
-    <> lA x y
-    <> z
+maskSegment :: (Show a, RealFloat a) => Text -> (a, a) -> Element
+maskSegment id (x, y) = clipPath_ [
+        Id_ <<- id
+        , ClipPathUnits_ <<- "userSpaceOnUse" 
+    ] $ rect_ [
+        Width_ <<- "30"
+        , Height_ <<- "30"
+    ]
 
 boxCoordinates = [ (x,y) | y<-range, x<-range ]
     where
         range = [ 15, 50 .. 155 ]
-
-mask :: Element
-mask = path_
-    [
-        D_ <<- (
-            mA 0 0
-            <> lA 0 200
-            <> lA 200 200
-            <> lA 200 0
-            <> lA 0 0
-            <> z
-            <> " "
-            <> (mconcat $ P.map maskSegment boxCoordinates)
-        )
-        , Stroke_ <<- "none"
-        , Fill_ <<- "white"
-        , Style_ <<- "fill-rule:evenodd"
-    ]
 
 rasterCircle :: (Show a, RealFloat a) => a -> (a, a) -> Element
 rasterCircle factor (x, y) = circle_ [
@@ -64,7 +47,7 @@ quadRaster (stepsize, (x, y)) = g_ [
         coordSpace = [ (x,y) | x<-range, y<-range ]
 
 quadRasterResult :: Element
-quadRasterResult = svg $ (mconcat $ P.map quadRaster $ P.zip [ 1.0,1.1..3.4 ] boxCoordinates) <> mask
+quadRasterResult = svg $ (mconcat $ P.map quadRaster $ P.zip [ 1.0,1.1..3.4 ] boxCoordinates) -- <> mask
 
 
 hexDot :: (Show a, RealFloat a) => a -> (a, a) -> Element
@@ -88,23 +71,25 @@ hexDot factor (x, y) = path_ [
         yDist = (*) size $ sin rad30
 
 hexRaster :: (Enum a, Show a, RealFloat a) => (a, (a, a)) -> Element
-hexRaster (size, (x, y)) = g_ [
+hexRaster (size, (x, y)) = maskSegment clipName (x, y) <> (g_ [
             Transform_ <<- translate x y
-        ] $ mconcat $ P.map (hexDot size) coordSpace
+            , Clip_path_ <<- Data.Text.concat [ "url(#", clipName, ")" ]
+        ] $ mconcat $ P.map (hexDot size) coordSpace)
     where
         height = size
         width = (*) size $ cos $ degToRad 30
-        maxCenter = 28
+        maxCenter = 31
         xrange1 = [ 0, width .. maxCenter ]
         xrange2 = [ (0.5 * width), (1.5 * width) .. maxCenter ]
         yrange1 = [ (0.5 * height), (2.0 * height) .. maxCenter ]
         yrange2 = [ (1.25 * height), (2.75 * height) .. maxCenter ]
         coordSpace = [ (x,y) | x<-xrange1, y<-yrange1 ] ++ [ (x,y) | x<-xrange2, y<-yrange2 ]
+        clipName = Data.Text.concat ["clip-", (showR size)]
 
 
 hexRasterResult :: Element
-hexRasterResult = svg $ 
-    (mconcat $ P.map hexRaster $ P.zip (P.take 25 [ 2.0,2.20.. ]) boxCoordinates) <> mask
+hexRasterResult = svg $
+    mconcat $ P.map hexRaster $ P.zip (P.take 25 [ 2.0,2.20.. ]) boxCoordinates
 
 
 triangleDot :: (Show a, RealFloat a) => a -> (a, a) -> Element
@@ -143,7 +128,7 @@ triangleRaster (size, (x, y)) = g_ [
         coordSpace = [ (x,y) | x<-range, y<-range ]
 
 triangleRasterResult :: Element
-triangleRasterResult = svg $ (mconcat $ P.map triangleRaster $ P.zip (P.take 25 [ 1.0,1.05.. ]) boxCoordinates) <> mask
+triangleRasterResult = svg $ (mconcat $ P.map triangleRaster $ P.zip (P.take 25 [ 1.0,1.05.. ]) boxCoordinates) -- <> mask
 
 main :: IO ()
 main = do
