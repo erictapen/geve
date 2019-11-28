@@ -129,11 +129,11 @@ triangleRaster (size, (x, y)) = clipPath <> (g_ [
         coordSpace = [ (x,y) | x<-range, y<-range ]
 
 triangleRasterResult :: Element
-triangleRasterResult = svg $ (mconcat $ P.map triangleRaster $ P.zip (P.take 25 [ 1.0,1.05.. ]) boxCoordinates)
+triangleRasterResult = svg $ (mconcat $ P.map triangleRaster $ P.zip (P.take 25 [ 1.0,1.20.. ]) boxCoordinates)
 
 main :: IO ()
 main = do
     -- print quadRasterResult
-    print hexRasterResult
-    -- print triangleRasterResult
+    -- print hexRasterResult
+    print triangleRasterResult
 
