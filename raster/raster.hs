@@ -60,6 +60,10 @@ quadRaster (stepsize, (x, y)) = g_ [
         range = [ 1, (1+stepsize) .. 31 ]
         coordSpace = [ (x,y) | x<-range, y<-range ]
 
+quadRasterResult :: Element
+quadRasterResult = svg $ (mconcat $ P.map quadRaster $ P.zip [ 1.0,1.1..3.4 ] boxCoordinates) <> mask
+
+
 hexRaster :: (Enum a, Show a, RealFloat a) => (a, (a, a)) -> Element
 hexRaster (size, (x, y)) = g_ [
             Transform_ <<- translate x y
@@ -71,13 +75,46 @@ hexRaster (size, (x, y)) = g_ [
         yrange2 = [ (1.25 * size), (2.75 * size) .. 31 ]
         coordSpace = [ (x,y) | x<-xrange1, y<-yrange1 ] ++ [ (x,y) | x<-xrange2, y<-yrange2 ]
 
-quadRasterResult :: Element
-quadRasterResult = svg $ (mconcat $ P.map quadRaster $ P.zip [ 1.0,1.1..3.4 ] boxCoordinates) <> mask
 
 hexRasterResult :: Element
 hexRasterResult = svg $ (mconcat $ P.map hexRaster $ P.zip (P.take 25 [ 1.0,1.05.. ]) boxCoordinates) <> mask
 
+
+triangleDot :: (Show a, RealFloat a) => a -> (a, a) -> Element
+triangleDot factor (x, y) = path_ [
+        D_ <<- if (size < factor) then (
+            mA x y
+            <> lA (x + size) y
+            <> lA x (y + size)
+            <> lA x y
+            <> z
+        ) else (
+            mA x y
+            <> lA (x + factor) y
+            <> lA (x + factor) (y + size)
+            <> lA (x + size) (y + factor)
+            <> lA x (y + factor)
+            <> lA x y
+            <> z
+        )
+        , Fill_ <<- "black"
+        , Stroke_ <<- "none"
+    ]
+    where
+        size = (*) factor $ sqrt $ x**2 + y**2
+
+fractalRaster :: (Enum a, Show a, RealFloat a) => (a, (a, a)) -> Element
+fractalRaster (size, (x, y)) = g_ [
+            Transform_ <<- translate x y
+        ] $ mconcat $ P.map (triangleDot (0.05 * size)) coordSpace
+    where
+        range = [ 1, (1+size) .. 31 ]
+        coordSpace = [ (x,y) | x<-range, y<-range ]
+
+fractalRasterResult :: Element
+fractalRasterResult = svg $ (mconcat $ P.map fractalRaster $ P.zip (P.take 25 [ 1.0,1.05.. ]) boxCoordinates) <> mask
+
 main :: IO ()
 main = do
-    print hexRasterResult
+    print fractalRasterResult
 
