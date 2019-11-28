@@ -10,6 +10,9 @@ showI i = pack (show i)
 showR :: (Show a, RealFloat a) => a -> Text
 showR r = pack (show r)
 
+degToRad :: RealFloat a => a -> a 
+degToRad d      = d * pi / 180
+
 svg :: Element -> Element
 svg content =
      doctype
@@ -64,10 +67,30 @@ quadRasterResult :: Element
 quadRasterResult = svg $ (mconcat $ P.map quadRaster $ P.zip [ 1.0,1.1..3.4 ] boxCoordinates) <> mask
 
 
+hexDot :: (Show a, RealFloat a) => a -> (a, a) -> Element
+hexDot factor (x, y) = path_ [
+        D_ <<- (
+            mA x (y -size)
+            <> lA (x + xDist) (y - yDist)
+            <> lA (x + xDist) (y + yDist)
+            <> lA x (y + size)
+            <> lA (x - xDist) (y + yDist)
+            <> lA (x - xDist) (y - yDist)
+            <> lA x (y - size)
+            <> z
+        )
+    ] where
+        -- size = (*) factor $ max 30.0 $ sqrt $ x**2 + y**2
+        maxDist = (*) 2.0 $ sqrt $ 30**2 + 30**2
+        size = min 0.5 $ (sqrt $ x**2 + y**2) / maxDist
+        rad30 = degToRad 30
+        xDist = (*) size $ cos rad30
+        yDist = (*) size $ sin rad30
+
 hexRaster :: (Enum a, Show a, RealFloat a) => (a, (a, a)) -> Element
 hexRaster (size, (x, y)) = g_ [
             Transform_ <<- translate x y
-        ] $ mconcat $ P.map (rasterCircle (0.015 * size)) coordSpace
+        ] $ mconcat $ P.map (hexDot size) coordSpace
     where
         xrange1 = [ 0, size .. 31 ]
         xrange2 = [ (0.5 * size), (1.5 * size) .. 31 ]
@@ -77,7 +100,8 @@ hexRaster (size, (x, y)) = g_ [
 
 
 hexRasterResult :: Element
-hexRasterResult = svg $ (mconcat $ P.map hexRaster $ P.zip (P.take 25 [ 1.0,1.05.. ]) boxCoordinates) <> mask
+hexRasterResult = svg $ 
+    (mconcat $ P.map hexRaster $ P.zip (P.take 1 [ 1.0,1.05.. ]) boxCoordinates) -- <> mask
 
 
 triangleDot :: (Show a, RealFloat a) => a -> (a, a) -> Element
@@ -120,5 +144,5 @@ triangleRasterResult = svg $ (mconcat $ P.map triangleRaster $ P.zip (P.take 25 
 
 main :: IO ()
 main = do
-    print triangleRasterResult
+    print hexRasterResult
 
