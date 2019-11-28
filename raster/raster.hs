@@ -82,7 +82,7 @@ hexDot factor (x, y) = path_ [
     ] where
         -- size = (*) factor $ max 30.0 $ sqrt $ x**2 + y**2
         maxDist = (*) 2.0 $ sqrt $ 30**2 + 30**2
-        size = min 0.5 $ (sqrt $ x**2 + y**2) / maxDist
+        size = (*) factor $ min 0.505 $ (sqrt $ x**2 + y**2) / maxDist
         rad30 = degToRad 30
         xDist = (*) size $ cos rad30
         yDist = (*) size $ sin rad30
@@ -92,16 +92,19 @@ hexRaster (size, (x, y)) = g_ [
             Transform_ <<- translate x y
         ] $ mconcat $ P.map (hexDot size) coordSpace
     where
-        xrange1 = [ 0, size .. 31 ]
-        xrange2 = [ (0.5 * size), (1.5 * size) .. 31 ]
-        yrange1 = [ (0.5 * size), (2.0 * size) .. 31 ]
-        yrange2 = [ (1.25 * size), (2.75 * size) .. 31 ]
+        height = size
+        width = (*) size $ cos $ degToRad 30
+        maxCenter = 28
+        xrange1 = [ 0, width .. maxCenter ]
+        xrange2 = [ (0.5 * width), (1.5 * width) .. maxCenter ]
+        yrange1 = [ (0.5 * height), (2.0 * height) .. maxCenter ]
+        yrange2 = [ (1.25 * height), (2.75 * height) .. maxCenter ]
         coordSpace = [ (x,y) | x<-xrange1, y<-yrange1 ] ++ [ (x,y) | x<-xrange2, y<-yrange2 ]
 
 
 hexRasterResult :: Element
 hexRasterResult = svg $ 
-    (mconcat $ P.map hexRaster $ P.zip (P.take 1 [ 1.0,1.05.. ]) boxCoordinates) -- <> mask
+    (mconcat $ P.map hexRaster $ P.zip (P.take 25 [ 2.0,2.20.. ]) boxCoordinates) <> mask
 
 
 triangleDot :: (Show a, RealFloat a) => a -> (a, a) -> Element
