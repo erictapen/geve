@@ -8,7 +8,7 @@ showLength (Left str) = str
 showLength (Right image) = show $ dynamicMap imageWidth image
 
 --- Get Grey value from a pixel in the image
-getPixelValue :: DynamicImage -> (Float, Float) -> Pixel8
+getPixelValue :: DynamicImage -> (Float, Float) -> Float
 getPixelValue image (x, y) = let
         absX = round $ (*) x $ fromIntegral $ dynamicMap imageWidth image
         absY = round $ (*) y $ fromIntegral $ dynamicMap imageHeight image
@@ -16,7 +16,7 @@ getPixelValue image (x, y) = let
         px :: PixelRGB8
         px = pixelAt (convertRGB8 image) absX absY
     in
-    getValue px
+    fromIntegral $ div (toInteger $ getValue px) 255
 
 main :: IO ()
 main = do
