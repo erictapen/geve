@@ -6,6 +6,8 @@ pkgs.mkShell {
       diagrams
       SVGFonts
       svg-builder
+      JuicyPixels
+      either-unwrap
     ]))
   ];
 }
