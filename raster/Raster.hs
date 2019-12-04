@@ -43,26 +43,35 @@ boxCoordinates = [ (x,y) | y<-range, x<-range ]
         range = [ 15, 50 .. 155 ]
 
 -- simple raster dot
-rasterCircle :: (Show a, RealFloat a) => a -> (a, a) -> Element
-rasterCircle factor (x, y) = circle_ [
+rasterCircle :: (Show a, RealFloat a) =>
+    a
+    -> ((a, a) -> a)  -- brightness function
+    -> (a, a)
+    -> Element
+rasterCircle factor getBrightness (x, y) = circle_ [
         Cx_ <<- showR x
         , Cy_ <<- showR y
-        , R_ <<- (showR $ (*) factor $ sqrt $ x**2 + y**2)
+        , R_ <<- (showR $ (*) factor $ getBrightness (x / 30, y / 30))
     ]
 
 -- one rasterization using circles on a rectangular grid
-quadRaster :: (Enum a, Show a, RealFloat a) => (a, (a, a)) -> Element
-quadRaster (stepsize, (x, y)) = g_ [
+quadRaster :: (Enum a, Show a, RealFloat a) =>
+    ((a, a) -> a)  -- brightness function
+    -> (a, (a, a))
+    -> Element
+quadRaster getBrightness (stepsize, (x, y)) = g_ [
             Transform_ <<- translate x y
             , Clip_path_ <<- "url(#clip)"
-        ] $ mconcat $ P.map (rasterCircle (0.015 * stepsize)) coordSpace
+        ] $ mconcat $ P.map (rasterCircle (0.7 * stepsize) getBrightness) coordSpace
     where
         range = [ 1, (1+stepsize) .. 31 ]
         coordSpace = [ (x,y) | x<-range, y<-range ]
 
 -- Whole page for quadRaster
-quadRasterResult :: Element
-quadRasterResult = svg $ clipPath <> (mconcat $ P.map quadRaster $ P.zip [ 1.0,1.1..3.4 ] boxCoordinates)
+quadRasterResult :: (Show a, Enum a, RealFloat a) => ((a, a) -> a) -> Element
+quadRasterResult getBrightness = svg
+    $ clipPath
+    <> (mconcat $ P.map (quadRaster getBrightness) $ P.zip [ 1.0,1.1..3.4 ] boxCoordinates)
 
 
 -- one simple dot which is a hexagon

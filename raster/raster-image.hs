@@ -31,6 +31,6 @@ getPixelValue image (x, y) = let
 main :: IO ()
 main = do
     image <- readImage "face.png"
-    print $ hexRasterResult $ getPixelValue (fromRight image)
+    print $ quadRasterResult $ getPixelValue (fromRight image)
     -- putStrLn $ show $ getPixelValue (fromRight image) (0.0, 0.0)
 
