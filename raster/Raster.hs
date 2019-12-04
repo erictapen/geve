@@ -9,11 +9,11 @@ import Debug.Trace
 
 -- helper function for Text type
 showI :: Int -> Text
-showI i = pack (show i)
+showI i = pack $ show i
 
 -- helper fucntion for RealFloat type
 showR :: (Show a, RealFloat a) => a -> Text
-showR r = pack (show r)
+showR r = pack $ show r
 
 -- helper function for rad
 degToRad :: RealFloat a => a -> a 
@@ -66,8 +66,12 @@ quadRasterResult = svg $ clipPath <> (mconcat $ P.map quadRaster $ P.zip [ 1.0,1
 
 
 -- one simple dot which is a hexagon
-hexDot :: (Show a, RealFloat a) => a -> (a, a) -> Element
-hexDot factor (x, y) = path_ [
+hexDot :: (Show a, RealFloat a) =>
+        a                -- half a height
+        -> ((a, a) -> a) -- brightness function
+        -> (a, a)        -- coordinate tuple
+        -> Element
+hexDot factor getBrightness (x, y) = path_ [
         D_ <<- (
             mA x (y -size)
             <> lA (x + xDist) (y - yDist)
@@ -79,19 +83,20 @@ hexDot factor (x, y) = path_ [
             <> z
         )
     ] where
-        -- size = (*) factor $ max 30.0 $ sqrt $ x**2 + y**2
-        maxDist = (*) 2.0 $ sqrt $ 30**2 + 30**2
-        size = (*) factor $ min 0.505 $ (sqrt $ x**2 + y**2) / maxDist
+        size = (*) (0.51 * factor) $ getBrightness (x / 30, y / 30)
         rad30 = degToRad 30
         xDist = (*) size $ cos rad30
         yDist = (*) size $ sin rad30
 
 -- raster of hexagons on a hex layout
-hexRaster :: (Enum a, Show a, RealFloat a) => (a, (a, a)) -> Element
-hexRaster (size, (x, y)) = clipPath <> (g_ [
+hexRaster :: (Enum a, Show a, RealFloat a) =>
+        ((a, a) -> a)
+        -> (a, (a, a))
+        -> Element
+hexRaster getBrightness (size, (x, y)) = clipPath <> (g_ [
             Transform_ <<- translate x y
             , Clip_path_ <<- "url(#clip)"
-        ] $ mconcat $ P.map (hexDot size) coordSpace)
+        ] $ mconcat $ P.map (hexDot size getBrightness) coordSpace)
     where
         height = size
         width = (*) size $ cos $ degToRad 30
@@ -103,9 +108,9 @@ hexRaster (size, (x, y)) = clipPath <> (g_ [
         coordSpace = [ (x,y) | x<-xrange1, y<-yrange1 ] ++ [ (x,y) | x<-xrange2, y<-yrange2 ]
 
 -- whole page for hexRaster
-hexRasterResult :: Element
-hexRasterResult = svg $
-    mconcat $ P.map hexRaster $ P.zip (P.take 25 [ 2.0,2.20.. ]) boxCoordinates
+hexRasterResult :: (Show a, Enum a, RealFloat a) => ((a, a) -> a) -> Element
+hexRasterResult getBrightness = svg $
+    mconcat $ P.map (hexRaster getBrightness) $ P.zip (P.take 25 [ 0.3, 0.45.. ]) boxCoordinates
 
 -- simple raster dot in the shape of a triangle
 triangleDot :: (Show a, RealFloat a) =>
