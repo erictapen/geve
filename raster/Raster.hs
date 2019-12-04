@@ -5,6 +5,7 @@ module Raster where
 import Graphics.Svg
 import Data.Text
 import Prelude as P
+import Debug.Trace
 
 -- helper function for Text type
 showI :: Int -> Text
@@ -36,6 +37,7 @@ clipPath = clipPath_ [
     ]
 
 -- generates the bounding box positions on the page
+boxCoordinates :: (Enum a, RealFloat a) => [(a, a)]
 boxCoordinates = [ (x,y) | y<-range, x<-range ]
     where
         range = [ 15, 50 .. 155 ]
@@ -106,8 +108,12 @@ hexRasterResult = svg $
     mconcat $ P.map hexRaster $ P.zip (P.take 25 [ 2.0,2.20.. ]) boxCoordinates
 
 -- simple raster dot in the shape of a triangle
-triangleDot :: (Show a, RealFloat a) => a -> (a, a) -> Element
-triangleDot size (x, y) = path_ [
+triangleDot :: (Show a, RealFloat a) =>
+        a
+        -> ((a, a) -> a)
+        -> (a, a)
+        -> Element
+triangleDot size getBrightness (x, y) = path_ [
         D_ <<- if (f < size) then (
             -- white square with a black triangle
             mA x y
@@ -130,20 +136,27 @@ triangleDot size (x, y) = path_ [
         , Stroke_width_ <<- "0.01px"
     ]
     where
-        f = (*) (0.053 * size) $ sqrt $ x**2 + y**2
+        f = (*) (2 * size) $ getBrightness (x / 30, y / 30)
         f' = f - size
 
 -- raster for triangle dots in a rectangular layout
-triangleRaster :: (Enum a, Show a, RealFloat a) => (a, (a, a)) -> Element
-triangleRaster (size, (x, y)) = clipPath <> (g_ [
+triangleRaster :: (Enum a, Show a, RealFloat a) =>
+        ((a, a) -> a)
+        -> (a, (a, a))
+        -> Element
+-- triangleRaster getBrightness (size, (x, y)) = clipPath <> (g_ [
+triangleRaster getBrightness (size, (x, y)) = (g_ [
             Transform_ <<- translate x y
             , Clip_path_ <<- "url(#clip)"
-        ] $ mconcat $ P.map (triangleDot size) coordSpace)
+        ] $ mconcat $ P.map (triangleDot size getBrightness) coordSpace)
     where
         range = [ 1, (1+size) .. 31 ]
         coordSpace = [ (x,y) | x<-range, y<-range ]
 
 -- whole page for triangleRaster
-triangleRasterResult :: Element
-triangleRasterResult = svg $ (mconcat $ P.map triangleRaster $ P.zip (P.take 25 [ 1.0,1.20.. ]) boxCoordinates)
+triangleRasterResult :: (Show a, Enum a, RealFloat a) => ((a, a) -> a) -> Element
+triangleRasterResult getBrightness = svg
+    $ (mconcat
+        $ P.map (triangleRaster getBrightness)
+        $ P.zip (P.take 25 [ 1.0,1.20.. ]) boxCoordinates)
 
