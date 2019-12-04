@@ -6,20 +6,26 @@ import Graphics.Svg
 import Data.Text
 import Prelude as P
 
+-- helper function for Text type
 showI :: Int -> Text
 showI i = pack (show i)
 
+-- helper fucntion for RealFloat type
 showR :: (Show a, RealFloat a) => a -> Text
 showR r = pack (show r)
 
+-- helper function for rad
 degToRad :: RealFloat a => a -> a 
 degToRad d      = d * pi / 180
 
+-- document root
 svg :: Element -> Element
 svg content =
      doctype
   <> with (svg11_ content) [ Version_ <<- "1.1", Width_ <<- "200", Height_ <<- "200" ]
 
+-- SVG element that can be used to hide some parts of another element.  In this
+-- case we want to have boundary boxes for all the stuff.
 clipPath :: Element
 clipPath = clipPath_ [
         Id_ <<- "clip"
@@ -29,10 +35,12 @@ clipPath = clipPath_ [
         , Height_ <<- "30"
     ]
 
+-- generates the bounding box positions on the page
 boxCoordinates = [ (x,y) | y<-range, x<-range ]
     where
         range = [ 15, 50 .. 155 ]
 
+-- simple raster dot
 rasterCircle :: (Show a, RealFloat a) => a -> (a, a) -> Element
 rasterCircle factor (x, y) = circle_ [
         Cx_ <<- showR x
@@ -40,6 +48,7 @@ rasterCircle factor (x, y) = circle_ [
         , R_ <<- (showR $ (*) factor $ sqrt $ x**2 + y**2)
     ]
 
+-- one rasterization using circles on a rectangular grid
 quadRaster :: (Enum a, Show a, RealFloat a) => (a, (a, a)) -> Element
 quadRaster (stepsize, (x, y)) = g_ [
             Transform_ <<- translate x y
@@ -49,10 +58,12 @@ quadRaster (stepsize, (x, y)) = g_ [
         range = [ 1, (1+stepsize) .. 31 ]
         coordSpace = [ (x,y) | x<-range, y<-range ]
 
+-- Whole page for quadRaster
 quadRasterResult :: Element
 quadRasterResult = svg $ clipPath <> (mconcat $ P.map quadRaster $ P.zip [ 1.0,1.1..3.4 ] boxCoordinates)
 
 
+-- one simple dot which is a hexagon
 hexDot :: (Show a, RealFloat a) => a -> (a, a) -> Element
 hexDot factor (x, y) = path_ [
         D_ <<- (
@@ -73,6 +84,7 @@ hexDot factor (x, y) = path_ [
         xDist = (*) size $ cos rad30
         yDist = (*) size $ sin rad30
 
+-- raster of hexagons on a hex layout
 hexRaster :: (Enum a, Show a, RealFloat a) => (a, (a, a)) -> Element
 hexRaster (size, (x, y)) = clipPath <> (g_ [
             Transform_ <<- translate x y
@@ -88,12 +100,12 @@ hexRaster (size, (x, y)) = clipPath <> (g_ [
         yrange2 = [ (1.25 * height), (2.75 * height) .. maxCenter ]
         coordSpace = [ (x,y) | x<-xrange1, y<-yrange1 ] ++ [ (x,y) | x<-xrange2, y<-yrange2 ]
 
-
+-- whole page for hexRaster
 hexRasterResult :: Element
 hexRasterResult = svg $
     mconcat $ P.map hexRaster $ P.zip (P.take 25 [ 2.0,2.20.. ]) boxCoordinates
 
-
+-- simple raster dot in the shape of a triangle
 triangleDot :: (Show a, RealFloat a) => a -> (a, a) -> Element
 triangleDot size (x, y) = path_ [
         D_ <<- if (f < size) then (
@@ -121,6 +133,7 @@ triangleDot size (x, y) = path_ [
         f = (*) (0.053 * size) $ sqrt $ x**2 + y**2
         f' = f - size
 
+-- raster for triangle dots in a rectangular layout
 triangleRaster :: (Enum a, Show a, RealFloat a) => (a, (a, a)) -> Element
 triangleRaster (size, (x, y)) = clipPath <> (g_ [
             Transform_ <<- translate x y
@@ -130,6 +143,7 @@ triangleRaster (size, (x, y)) = clipPath <> (g_ [
         range = [ 1, (1+size) .. 31 ]
         coordSpace = [ (x,y) | x<-range, y<-range ]
 
+-- whole page for triangleRaster
 triangleRasterResult :: Element
 triangleRasterResult = svg $ (mconcat $ P.map triangleRaster $ P.zip (P.take 25 [ 1.0,1.20.. ]) boxCoordinates)
 
