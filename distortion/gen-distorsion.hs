@@ -26,19 +26,18 @@ svg content =
 xySpace :: (Enum a, RealFloat a) => [ (a, a) ]
 xySpace = [ (x, y) | x<-range, y<-range ]
     where
-        range = [1, 5 .. 200]
+        range = [1, 4 .. 200]
 
 -- function that introduces noise
 move :: (Double, Double) -> (Double, Double)
-move (x, y) = ( (val x), (y) )
+move (x, y) = ( (val x), (val y) )
     where
-        factor = 100.0
+        factor = 200.0
         seed :: Int
-        seed = round $ x
-        -- scale = 0.999
-        scale = 0.5
+        seed = round $ 5
+        scale = 0.001
         octaves = 10
-        val old = (+) old $ (*) factor $ noiseValue (perlin seed octaves scale 0.5) (1,2,3)
+        val old = (+) old $ (*) factor $ noiseValue (perlin seed octaves scale 0.5) (x,y,0)
 
 dot :: (Show a, RealFloat a) => ( (a, a) -> (a, a) ) -> (a, a) -> Element
 dot move xy = let
@@ -46,7 +45,7 @@ dot move xy = let
     in circle_ [
         Cx_ <<- showR movedX
         , Cy_ <<- showR movedY
-        , R_ <<- showR 1
+        , R_ <<- showR 0.5
     ]
 
 dots :: Element
