@@ -54,25 +54,21 @@ dot move xy = let
 dots :: Element
 dots = g_ [] $ mconcat $ P.map (dot move) xySpace
 
-lineSegment :: (Double, Double) -> Text
-lineSegment (x, y) = lA (distort x) y
+lineSegment :: (Double, Double) -> Double
+lineSegment (x, y) = (distort x)
     where
-        factor = 200.0
+        factor = 300.0
         seed :: Int
         seed = round $ 5
         scale = 0.001
-        octaves = 10
+        octaves = 5
         distort old = (+) old $ (*) factor $ noiseValue (perlin seed octaves scale 0.5) (x,y,0)
 
 line :: Double -> Element
 line x = path_ [
         D_ <<- (
-            mA x 0
-            <> lA x 200
-            <> (lineSegment (x, 150))
-            <> (lineSegment (x, 100))
-            <> (lineSegment (x, 50))
-            <> z
+            mA (lineSegment (x, 0)) 0
+            <> (mconcat $ P.map (\y -> lA (lineSegment (x, y)) y) $ P.tail [0, 2 .. 200])
         )
         , Fill_ <<- "none"
         , Stroke_ <<- "black"
