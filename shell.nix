@@ -8,6 +8,8 @@ pkgs.mkShell {
       svg-builder
       JuicyPixels
       either-unwrap
+      hsnoise
+      Noise
     ]))
   ];
 }
