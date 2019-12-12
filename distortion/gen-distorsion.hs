@@ -28,6 +28,9 @@ xySpace = [ (x, y) | x<-range, y<-range ]
     where
         range = [1, 4 .. 200]
 
+xSpace :: (Enum a, RealFloat a) => [a]
+xSpace = [1, 4 .. 200]
+
 -- function that introduces noise
 move :: (Double, Double) -> (Double, Double)
 move (x, y) = ( (val x), (val y) )
@@ -49,18 +52,38 @@ dot move xy = let
     ]
 
 dots :: Element
-dots = g_ [
-    ] $ mconcat $ P.map (dot move) xySpace
+dots = g_ [] $ mconcat $ P.map (dot move) xySpace
 
--- lineSegment :: (Show a, RealFloat a) => ( (a, a) -> (a, a) ) -> (a, a) -> Attribute
--- lineSegment move (x, y) =
+lineSegment :: (Double, Double) -> Text
+lineSegment (x, y) = lA (distort x) y
+    where
+        factor = 200.0
+        seed :: Int
+        seed = round $ 5
+        scale = 0.001
+        octaves = 10
+        distort old = (+) old $ (*) factor $ noiseValue (perlin seed octaves scale 0.5) (x,y,0)
 
--- lines :: Element
--- lines = g_ [
---     ] $ mconcat $ P.map (line move) xSpace
+line :: Double -> Element
+line x = path_ [
+        D_ <<- (
+            mA x 0
+            <> lA x 200
+            <> (lineSegment (x, 150))
+            <> (lineSegment (x, 100))
+            <> (lineSegment (x, 50))
+            <> z
+        )
+        , Fill_ <<- "none"
+        , Stroke_ <<- "black"
+        , Stroke_width_ <<- "1px"
+    ]
+
+lineSet :: Element
+lineSet = g_ [] $ mconcat $ P.map line xSpace
 
 main :: IO ()
 main = do
-    print $ svg $ dots
-    -- print $ svg $ lines
+    -- print $ svg $ dots
+    print $ svg $ lineSet
 
