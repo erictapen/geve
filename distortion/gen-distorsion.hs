@@ -59,10 +59,12 @@ lineSegment (x, y) = (distort x)
     where
         factor = 300.0
         seed :: Int
-        seed = round $ 5
+        seed = 500
+        -- scale = 0.05
         scale = 0.001
         octaves = 5
-        distort old = (+) old $ (*) factor $ noiseValue (perlin seed octaves scale 0.5) (x,y,0)
+        noise = noiseValue (perlin seed octaves scale 0.5) (x,y,0)
+        distort old = (+) old $ (*) factor $ trace (show noise) $ noise
 
 line :: Double -> Element
 line x = path_ [
