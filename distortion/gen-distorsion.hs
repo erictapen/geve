@@ -23,11 +23,12 @@ svg content =
      doctype
   <> with (svg11_ content) [ Version_ <<- "1.1", Width_ <<- "200", Height_ <<- "200" ]
 
-coordSpace :: (Enum a, RealFloat a) => [ (a, a) ]
-coordSpace = [ (x, y) | x<-range, y<-range ]
+xySpace :: (Enum a, RealFloat a) => [ (a, a) ]
+xySpace = [ (x, y) | x<-range, y<-range ]
     where
         range = [1, 5 .. 200]
 
+-- function that introduces noise
 move :: (Double, Double) -> (Double, Double)
 move (x, y) = ( (val x), (y) )
     where
@@ -50,8 +51,17 @@ dot move xy = let
 
 dots :: Element
 dots = g_ [
-    ] $ mconcat $ P.map (dot move) coordSpace
+    ] $ mconcat $ P.map (dot move) xySpace
+
+-- lineSegment :: (Show a, RealFloat a) => ( (a, a) -> (a, a) ) -> (a, a) -> Attribute
+-- lineSegment move (x, y) =
+
+-- lines :: Element
+-- lines = g_ [
+--     ] $ mconcat $ P.map (line move) xSpace
 
 main :: IO ()
 main = do
     print $ svg $ dots
+    -- print $ svg $ lines
+
