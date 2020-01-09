@@ -3,6 +3,9 @@
 import Graphics.Svg
 import Data.Text
 
+boxSize :: RealFloat a => a
+boxSize = 30
+
 showI :: Int -> Text
 showI i = pack (show i)
 
@@ -19,29 +22,31 @@ basicRect (x, y) = g_ [
     $ rect_ [
         Width_ <<- "30",
         Height_ <<- "30",
-        Fill_ <<- "none",
+        Fill_ <<- "black",
         Stroke_ <<- "black" 
     ]
-
-fractalRect :: RealFloat a => (a, a) -> Int -> Element
-fractalRect _ 0 = mempty
-fractalRect (x, y) n = (g_ [
-        Transform_ <<- translate x y <> rotate 10
-    ]
-    $ rect_ [
-        Width_ <<- showI (30 - n),
-        Height_ <<- showI (30 - n),
-        Fill_ <<- "none",
-        Stroke_ <<- "black" 
-    ]) <> fractalRect (x,y) (n-1)
 
 basicRectGrid :: Element
 basicRectGrid = mconcat $
-    Prelude.map basicRect [ (x,y) | x<-[ 10, 50, 90, 130 ], y<-[ 10, 50, 90, 130 ] ]
+    Prelude.map basicRect [ (x,y) | x<-[ 15, 50 .. 155 ], y<-[ 15, 50 .. 155  ] ]
+
+randomQuad :: RealFloat a => (a, a) -> Element
+randomQuad (x, y) = g_ [
+        Transform_ <<- translate x y
+    ] $ path_ [
+        D_ <<- (
+            mA 0 0
+            <> lA 0 10
+            <> lA 10 10
+            <> lA 10 0
+            <> z
+        ),
+        Fill_ <<- "white",
+        Stroke_ <<- "none"
+    ]
 
 main :: IO ()
 main = do
     print $ svg $
-        basicRectGrid
-     <> fractalRect (10, 10) 10
+        basicRectGrid <> randomQuad (15, 15)
 
