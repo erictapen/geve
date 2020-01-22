@@ -9,12 +9,14 @@ boxSize = 30
 showI :: Int -> Text
 showI i = pack (show i)
 
+-- basic function to generate a svg document
 svg :: Element -> Element
 svg content =
      doctype
   <> with (svg11_ content) [Version_ <<- "1.1", Width_ <<- "200", Height_ <<- "200"]
 
 -- 30*30
+-- The basic rectangle
 basicRect :: RealFloat a => (a, a) -> Element
 basicRect (x, y) = g_ [
         Transform_ <<- translate x y
@@ -26,10 +28,12 @@ basicRect (x, y) = g_ [
         Stroke_ <<- "black" 
     ]
 
+-- the grid in which basic rectangles are aligned
 basicRectGrid :: Element
 basicRectGrid = mconcat $
     Prelude.map basicRect [ (x,y) | x<-[ 15, 50 .. 155 ], y<-[ 15, 50 .. 155  ] ]
 
+-- a quad with random dimensions
 randomQuad :: RealFloat a => (a, a) -> Element
 randomQuad (x, y) = g_ [
         Transform_ <<- translate x y
