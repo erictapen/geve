@@ -161,3 +161,25 @@ main =
                       (\s -> 1 * (1 + cos (s + pi)))
                       (\s -> 1 * (1 + cos (s)))
                   )
+        writeSvg "./linecircle3.svg" $
+          let center1 = Point 102 92
+              center2 = Point 92 102
+              outer = \s -> 1 * (1 + sin (0.5 * pi + s))
+              inner = \s -> 1 * (1 + sin (1.0 * pi + s))
+              n = 64
+           in toElement
+                ( VariableThicknessLineCircle
+                    (Circle center2 100)
+                    (Circle center1 75)
+                    n
+                    outer
+                    inner
+                )
+                <> toElement
+                  ( VariableThicknessLineCircle
+                      (Circle center1 75)
+                      (Circle center2 50)
+                      n
+                      inner
+                      outer
+                  )
