@@ -2,7 +2,6 @@
 
 import Data.List as DL
 import Data.Text
-import Debug.Trace
 import Graphics.Svg
 import Prelude as P
 
@@ -23,6 +22,9 @@ svg content =
       [Version_ <<- "1.1", Width_ <<- "200", Height_ <<- "200"]
 
 data Point = Point Float Float
+
+instance Semigroup Point where
+  (<>) (Point x1 y1) (Point x2 y2) = Point (x1 + x2) (y1 + y2)
 
 type Thickness = Float
 
@@ -67,11 +69,24 @@ instance ToElement Line where
             Stroke_ <<- "none"
           ]
 
-line :: Element -> Element
-line e = e
+type Radius = Float
 
-linesGraphic :: Element -> Element
-linesGraphic e = line e
+type Amount = Float
+
+type Center = Point
+
+data LineCircle = LineCircle Center Radius Radius Amount Thickness
+
+instance ToElement LineCircle where
+  toElement (LineCircle centerPoint r1 r2 amount thickness) =
+    let angles = [0, (2 * pi / amount) .. 2 * pi]
+        line angle =
+          toElement $
+            SimpleLine
+              thickness
+              (centerPoint <> (Point (r1 * cos angle) (r1 * sin angle)))
+              (centerPoint <> (Point (r2 * cos angle) (r2 * sin angle)))
+     in mconcat $ P.map line angles
 
 main :: IO ()
 main =
@@ -86,4 +101,5 @@ main =
       p6 = Point 200 100
       l3 = toElement $ ComplexLine [5, 10, 5, 10, 5, 30] p5 p6
    in do
-        writeSvg "./lines.svg" $ linesGraphic $ l1 <> l2 <> l3
+        writeSvg "./lines.svg" $ l1 <> l2 <> l3
+        writeSvg "./linecircle.svg" $ toElement $ LineCircle (Point 100 100) 50 100 32 3
