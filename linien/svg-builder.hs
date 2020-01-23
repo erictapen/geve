@@ -27,11 +27,15 @@ data Point = Point Float Float
 type Thickness = Float
 
 data Line
-  = SimpleLine Thickness Point Point
-  | TriangleLine Thickness Thickness Point Point
-  | ComplexLine [Thickness] Point Point
+  = -- A line with a single thickness
+    SimpleLine Thickness Point Point
+  | -- A line with two thicknesses, so it can be shaped like the cut of a triangle
+    TriangleLine Thickness Thickness Point Point
+  | -- A line with varying thickness
+    ComplexLine [Thickness] Point Point
 
--- implement toElement for Line, so we can always get an SVG element from a Line.
+-- Implement toElement for Line, so we can always get an SVG element from a Line.
+-- All of this can be deduced from ComplexLine
 instance ToElement Line where
   toElement (SimpleLine t p1 p2) =
     toElement (ComplexLine [t] p1 p2)
