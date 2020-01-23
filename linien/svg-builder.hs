@@ -31,14 +31,14 @@ instance ToElement Line where
     let angle = atan2 (y2 - y1) (x2 - x1) -- yeah, atan2 takes y first, then x…
         ea = angle - (pi * 0.5) -- the angle of the stroke ends is 90 degrees turned
         ht = thickness / 2 -- half thickness
+        dx = cos ea * ht
+        dy = sin ea * ht
      in path_
           [ D_
-              <<- ( mA (x1 + (cos ea * ht)) (y1 + (sin ea * ht))
-                      <> lA x1 y1
-                      <> lA (x1 - (cos ea * ht)) (y1 - (sin ea * ht))
-                      <> lA (x2 - (cos ea * ht)) (y2 - (sin ea * ht))
-                      <> lA x2 y2
-                      <> lA (x2 + (cos ea * ht)) (y2 + (sin ea * ht))
+              <<- ( mA (x1 + dx) (y1 + dy)
+                      <> lA (x1 - dx) (y1 - dy)
+                      <> lA (x2 - dx) (y2 - dy)
+                      <> lA (x2 + dx) (y2 + dy)
                       <> z
                   ),
             Fill_ <<- "black",
