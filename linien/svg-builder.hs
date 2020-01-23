@@ -1,7 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 
+import Data.List as DL
 import Data.Text
+import Debug.Trace
 import Graphics.Svg
+import Prelude as P
 
 -- import BasicPrelude (tshow)
 
@@ -26,26 +29,34 @@ type Thickness = Float
 data Line
   = SimpleLine Thickness Point Point
   | TriangleLine Thickness Thickness Point Point
+  | ComplexLine [Thickness] Point Point
 
--- implement toElement for Line, so we can always get an SVG element from a line.
+-- implement toElement for Line, so we can always get an SVG element from a Line.
 instance ToElement Line where
   toElement (SimpleLine t p1 p2) =
-    toElement (TriangleLine t t p1 p2)
-  toElement (TriangleLine t1 t2 (Point x1 y1) (Point x2 y2)) =
+    toElement (ComplexLine [t] p1 p2)
+  toElement (TriangleLine t1 t2 p1 p2) =
+    toElement (ComplexLine [t1, t2] p1 p2)
+  toElement (ComplexLine [] p1 p2) =
+    toElement (ComplexLine [1.0, 1.0] p1 p2)
+  toElement (ComplexLine (t : []) p1 p2) =
+    toElement (ComplexLine [t, t] p1 p2)
+  toElement (ComplexLine thicknesses (Point x1 y1) (Point x2 y2)) =
     let angle = atan2 (y2 - y1) (x2 - x1) -- yeah, atan2 takes y first, then x…
-        ea = angle - (pi * 0.5) -- the angle of the stroke ends is 90 degrees turned
-        ht1 = t1 / 2 -- half thickness1
-        ht2 = t2 / 2 -- half thickness2
-        dx1 = cos ea * ht1
-        dy1 = sin ea * ht1
-        dx2 = cos ea * ht2
-        dy2 = sin ea * ht2
+        orthAngle = angle - (0.5 * pi) -- the angle of the stroke ends is 90 degrees turned
+        fractionalSteps = [0, (1 / (fromRational $ fromIntegral $ P.length thicknesses - 1)) .. 1]
+        xs = P.map (\f -> x1 + f * (x2 - x1)) fractionalSteps -- x positions of points along the line
+        ys = P.map (\f -> y1 + f * (y2 - y1)) fractionalSteps
+        dxs = P.map (\t -> cos orthAngle * (t / 2)) thicknesses -- deltas to move points in x direction so we get thickness
+        dys = P.map (\t -> sin orthAngle * (t / 2)) thicknesses
+        pathPoint factor (x, y, dx, dy) = lA (x + (factor * dx)) (y + (factor * dy))
+        pathPoints = DL.zip4 xs ys dxs dys
      in path_
           [ D_
-              <<- ( mA (x1 + dx1) (y1 + dy1)
-                      <> lA (x1 - dx1) (y1 - dy1)
-                      <> lA (x2 - dx2) (y2 - dy2)
-                      <> lA (x2 + dx2) (y2 + dy2)
+              <<- ( mA x1 y1
+                      <> (mconcat $ P.map (pathPoint (-1)) pathPoints)
+                      <> lA x2 y2
+                      <> (mconcat $ P.reverse $ P.map (pathPoint 1) pathPoints)
                       <> z
                   ),
             Fill_ <<- "black",
@@ -61,11 +72,14 @@ linesGraphic e = line e
 main :: IO ()
 main =
   let writeSvg f g = writeFile f $ show $ svg g
-      p1 = Point 10 20
-      p2 = Point 100 150
-      l1 = SimpleLine 10 p1 p2
-      p3 = Point 100 20
-      p4 = Point 190 150
-      l2 = TriangleLine 40 10 p3 p4
+      p1 = Point 0 0
+      p2 = Point 0 100
+      l1 = toElement $ SimpleLine 10 p1 p2
+      p3 = Point 100 0
+      p4 = Point 100 100
+      l2 = toElement $ TriangleLine 10 20 p3 p4
+      p5 = Point 200 0
+      p6 = Point 200 100
+      l3 = toElement $ ComplexLine [5, 10, 5, 10, 5, 30] p5 p6
    in do
-        writeSvg "./lines.svg" $ linesGraphic $ toElement l1 <> toElement l2
+        writeSvg "./lines.svg" $ linesGraphic $ l1 <> l2 <> l3
