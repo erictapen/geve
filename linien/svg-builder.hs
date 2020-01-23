@@ -76,46 +76,55 @@ type Amount = Float
 
 type Center = Point
 
+data Circle
+  = -- Just a data type to talk about circles.
+    Circle Center Radius
+
+-- LineCircles are circles that consist of lines…
 data LineCircle
-  = -- A simple line circle with an outer and an inner radius.
+  = -- A simple line circle with an outer and an inner radius and a constant thickness.
     LineCircle
-      Center
-      Radius
-      Radius
+      Circle
+      Circle
       Amount
       Thickness
   | -- A LineCircle which allows two thickness functions for both ends of the lines.
     VariableThicknessLineCircle
-      Center
-      Radius
-      Radius
+      Circle
+      Circle
       Amount
       (Float -> Thickness)
       (Float -> Thickness)
 
 instance ToElement LineCircle where
-  toElement (LineCircle centerPoint r1 r2 amount thickness) =
+  toElement (LineCircle circle1 circle2 n thickness) =
     toElement $
       VariableThicknessLineCircle
-        centerPoint
-        r1
-        r2
-        amount
+        circle1
+        circle2
+        n
         (const thickness)
         (const thickness)
-  toElement (VariableThicknessLineCircle centerPoint r1 r2 amount angleToThickness1 angleToThickness2) =
-    let steps = [0, (2 * pi / amount) .. 2 * pi]
-        angles = steps
-        thicknesses1 = P.map angleToThickness1 angles
-        thicknesses2 = P.map angleToThickness2 angles
-        line (angle, thickness1, thickness2) =
-          toElement $
-            TriangleLine
-              thickness1
-              thickness2
-              (centerPoint <> (Point (r1 * cos angle) (r1 * sin angle)))
-              (centerPoint <> (Point (r2 * cos angle) (r2 * sin angle)))
-     in mconcat $ P.map line $ zip3 angles thicknesses1 thicknesses2
+  toElement
+    ( VariableThicknessLineCircle
+        (Circle center1 r1)
+        (Circle center2 r2)
+        n
+        angleToThickness1
+        angleToThickness2
+      ) =
+      let steps = [0, (2 * pi / n) .. 2 * pi]
+          angles = steps
+          thicknesses1 = P.map angleToThickness1 angles
+          thicknesses2 = P.map angleToThickness2 angles
+          line (angle, thickness1, thickness2) =
+            toElement $
+              TriangleLine
+                thickness1
+                thickness2
+                (center1 <> (Point (r1 * cos angle) (r1 * sin angle)))
+                (center2 <> (Point (r2 * cos angle) (r2 * sin angle)))
+       in mconcat $ P.map line $ zip3 angles thicknesses1 thicknesses2
 
 main :: IO ()
 main =
@@ -131,23 +140,24 @@ main =
       l3 = toElement $ ComplexLine [5, 10, 5, 10, 5, 30] p5 p6
    in do
         writeSvg "./lines.svg" $ l1 <> l2 <> l3
-        writeSvg "./linecircle1.svg" $ toElement $ LineCircle (Point 100 100) 50 100 128 1
+        writeSvg "./linecircle1.svg" $ toElement $
+          let centerPoint = Point 100 100
+           in LineCircle (Circle centerPoint 100) (Circle centerPoint 50) 64 1
         writeSvg "./linecircle2.svg" $
-          toElement
-            ( VariableThicknessLineCircle
-                (Point 100 100)
-                75
-                100
-                128
-                (\s -> 1 * (1 + sin (s + pi)))
-                (\s -> 1 * (1 + sin (s)))
-            )
-            <> toElement
-              ( VariableThicknessLineCircle
-                  (Point 100 100)
-                  50
-                  75
-                  128
-                  (\s -> 1 * (1 + cos (s + pi)))
-                  (\s -> 1 * (1 + cos (s)))
-              )
+          let centerPoint = Point 100 100
+           in toElement
+                ( VariableThicknessLineCircle
+                    (Circle centerPoint 75)
+                    (Circle centerPoint 100)
+                    64
+                    (\s -> 1 * (1 + sin (s + pi)))
+                    (\s -> 1 * (1 + sin (s)))
+                )
+                <> toElement
+                  ( VariableThicknessLineCircle
+                      (Circle centerPoint 50)
+                      (Circle centerPoint 75)
+                      64
+                      (\s -> 1 * (1 + cos (s + pi)))
+                      (\s -> 1 * (1 + cos (s)))
+                  )
