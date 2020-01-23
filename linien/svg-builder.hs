@@ -53,7 +53,8 @@ instance ToElement Line where
         fractionalSteps = [0, (1 / (fromRational $ fromIntegral $ P.length thicknesses - 1)) .. 1]
         xs = P.map (\f -> x1 + f * (x2 - x1)) fractionalSteps -- x positions of points along the line
         ys = P.map (\f -> y1 + f * (y2 - y1)) fractionalSteps
-        dxs = P.map (\t -> cos orthAngle * (t / 2)) thicknesses -- deltas to move points in x direction so we get thickness
+        -- deltas to move points in x direction so we get thickness
+        dxs = P.map (\t -> cos orthAngle * (t / 2)) thicknesses
         dys = P.map (\t -> sin orthAngle * (t / 2)) thicknesses
         pathPoint factor (x, y, dx, dy) = lA (x + (factor * dx)) (y + (factor * dy))
         pathPoints = DL.zip4 xs ys dxs dys
@@ -75,18 +76,46 @@ type Amount = Float
 
 type Center = Point
 
-data LineCircle = LineCircle Center Radius Radius Amount Thickness
+data LineCircle
+  = -- A simple line circle with an outer and an inner radius.
+    LineCircle
+      Center
+      Radius
+      Radius
+      Amount
+      Thickness
+  | -- A LineCircle which allows two thickness functions for both ends of the lines.
+    VariableThicknessLineCircle
+      Center
+      Radius
+      Radius
+      Amount
+      (Float -> Thickness)
+      (Float -> Thickness)
 
 instance ToElement LineCircle where
   toElement (LineCircle centerPoint r1 r2 amount thickness) =
-    let angles = [0, (2 * pi / amount) .. 2 * pi]
-        line angle =
+    toElement $
+      VariableThicknessLineCircle
+        centerPoint
+        r1
+        r2
+        amount
+        (const thickness)
+        (const thickness)
+  toElement (VariableThicknessLineCircle centerPoint r1 r2 amount angleToThickness1 angleToThickness2) =
+    let steps = [0, (2 * pi / amount) .. 2 * pi]
+        angles = steps
+        thicknesses1 = P.map angleToThickness1 angles
+        thicknesses2 = P.map angleToThickness2 angles
+        line (angle, thickness1, thickness2) =
           toElement $
-            SimpleLine
-              thickness
+            TriangleLine
+              thickness1
+              thickness2
               (centerPoint <> (Point (r1 * cos angle) (r1 * sin angle)))
               (centerPoint <> (Point (r2 * cos angle) (r2 * sin angle)))
-     in mconcat $ P.map line angles
+     in mconcat $ P.map line $ zip3 angles thicknesses1 thicknesses2
 
 main :: IO ()
 main =
@@ -102,4 +131,23 @@ main =
       l3 = toElement $ ComplexLine [5, 10, 5, 10, 5, 30] p5 p6
    in do
         writeSvg "./lines.svg" $ l1 <> l2 <> l3
-        writeSvg "./linecircle.svg" $ toElement $ LineCircle (Point 100 100) 50 100 32 3
+        writeSvg "./linecircle1.svg" $ toElement $ LineCircle (Point 100 100) 50 100 128 1
+        writeSvg "./linecircle2.svg" $
+          toElement
+            ( VariableThicknessLineCircle
+                (Point 100 100)
+                75
+                100
+                128
+                (\s -> 1 * (1 + sin (s + pi)))
+                (\s -> 1 * (1 + sin (s)))
+            )
+            <> toElement
+              ( VariableThicknessLineCircle
+                  (Point 100 100)
+                  50
+                  75
+                  128
+                  (\s -> 1 * (1 + cos (s + pi)))
+                  (\s -> 1 * (1 + cos (s)))
+              )
