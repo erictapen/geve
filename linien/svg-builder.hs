@@ -42,7 +42,7 @@ instance ToElement Line where
                       <> z
                   ),
             Fill_ <<- "black",
-            Stroke_ <<- "black"
+            Stroke_ <<- "none"
           ]
 
 line :: Element -> Element
