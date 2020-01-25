@@ -1,7 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Raster where
-
 import Data.Text
 import Debug.Trace
 import Graphics.Svg
@@ -82,6 +80,7 @@ lineSet :: Element
 lineSet = g_ [] $ mconcat $ P.map line xSpace
 
 main :: IO ()
-main = do
-  -- print $ svg $ dots
-  print $ svg $ lineSet
+main =
+  let writeSvg f g = writeFile f $ show $ svg g
+   in do
+        writeSvg "14.svg" $ lineSet
