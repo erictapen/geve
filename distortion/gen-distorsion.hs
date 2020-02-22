@@ -90,4 +90,5 @@ main =
         writeSvg "10.svg" $ DotDistorsion $ mkPerlin 5 10
         writeSvg "12.svg" $ LineDistorsion 1 $ mkPerlin 5 10
         writeSvg "13.svg" $ LineDistorsion 1 $ mkPerlin 500 5
-        writeSvg "14.svg" $ LineDistorsion 1 $ mkPerlin 5 5
+        writeSvg "14.svg" $ LineDistorsion 0.5 $ mkPerlin 5 5
+        writeSvg "15.svg" $ LineDistorsion 0.2 $ mkPerlin 100 5
