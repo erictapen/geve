@@ -89,7 +89,8 @@ instance ToElement Distorsion where
 main :: IO ()
 main =
   let writeSvg f g = renderToFile f $ svg $ toElement g
-      mkPerlin seed octaves = perlin seed octaves 0.001 0.5
+      mkPerlin seed octaves = mkPerlinWithScale seed octaves 0.001
+      mkPerlinWithScale seed octaves scale = perlin seed octaves scale 0.5
       defaultXSpace = [100, 104 .. 300]
    in do
         writeSvg "10.svg" $
@@ -125,5 +126,17 @@ main =
           LineDistorsion
             { pNoise = mkPerlin 100 5,
               thickness = 0.2,
-              xSpace = [100, 102 .. 300]
+              xSpace = [100, 101 .. 300]
+            }
+        writeSvg "17.svg" $
+          LineDistorsion
+            { pNoise = mkPerlin 150 10,
+              thickness = 0.2,
+              xSpace = [100, 100.5 .. 300]
+            }
+        writeSvg "18.svg" $
+          LineDistorsion
+            { pNoise = mkPerlinWithScale 300 3 0.002,
+              thickness = 5,
+              xSpace = [0, 20 .. 200]
             }
