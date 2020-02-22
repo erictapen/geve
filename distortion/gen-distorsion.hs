@@ -70,8 +70,8 @@ line pNoise x =
 lineSet :: DistorsionData -> Element
 lineSet (DistorsionData perlin) = g_ [] $ mconcat $ P.map (line perlin) xSpace
 
-
 type Octaves = Int
+
 data DistorsionData = DistorsionData Perlin
 
 main :: IO ()
@@ -79,6 +79,7 @@ main =
   let writeSvg f g = renderToFile f $ svg g
       mkPerlin seed octaves = perlin seed octaves 0.001 0.5
    in do
+        writeSvg "10.svg" $ dots $ DistorsionData $ mkPerlin 5 10
         writeSvg "12.svg" $ lineSet $ DistorsionData $ mkPerlin 5 10
         writeSvg "13.svg" $ lineSet $ DistorsionData $ mkPerlin 500 5
         writeSvg "14.svg" $ lineSet $ DistorsionData $ mkPerlin 5 5
