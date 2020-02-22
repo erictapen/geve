@@ -1,3 +1,4 @@
+{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 import Data.Text
@@ -73,22 +74,52 @@ type Octaves = Int
 -- Thickness of a line, in whatever units
 type LineThickness = Float
 
--- Variants of the distortion graphics
+-- Variants of the distorsion graphics
 data Distorsion
-  = LineDistorsion LineThickness Perlin
-  | DotDistorsion Perlin
+  = LineDistorsion
+      { pNoise :: Perlin,
+        thickness :: LineThickness
+      }
+  | DotDistorsion
+      { pNoise :: Perlin
+      }
 
 instance ToElement Distorsion where
-  toElement (LineDistorsion lineThickness pNoise) = g_ [] $ mconcat $ P.map (line pNoise lineThickness) xSpace
-  toElement (DotDistorsion pNoise) = g_ [] $ mconcat $ P.map (dot pNoise move) xySpace
+  toElement (LineDistorsion {pNoise, thickness}) = g_ [] $ mconcat $ P.map (line pNoise thickness) xSpace
+  toElement (DotDistorsion {pNoise}) = g_ [] $ mconcat $ P.map (dot pNoise move) xySpace
 
 main :: IO ()
 main =
   let writeSvg f g = renderToFile f $ svg $ toElement g
       mkPerlin seed octaves = perlin seed octaves 0.001 0.5
    in do
-        writeSvg "10.svg" $ DotDistorsion $ mkPerlin 5 10
-        writeSvg "12.svg" $ LineDistorsion 1 $ mkPerlin 5 10
-        writeSvg "13.svg" $ LineDistorsion 1 $ mkPerlin 500 5
-        writeSvg "14.svg" $ LineDistorsion 0.5 $ mkPerlin 5 5
-        writeSvg "15.svg" $ LineDistorsion 0.2 $ mkPerlin 100 5
+        writeSvg "10.svg" $
+          DotDistorsion
+            { pNoise = mkPerlin 5 10
+            }
+        -- we have no 11.svg, as it was an accident
+        writeSvg "12.svg" $
+          LineDistorsion
+            { pNoise = mkPerlin 5 10,
+              thickness = 1
+            }
+        writeSvg "13.svg" $
+          LineDistorsion
+            { pNoise = mkPerlin 500 5,
+              thickness = 1
+            }
+        writeSvg "14.svg" $
+          LineDistorsion
+            { pNoise = mkPerlin 5 5,
+              thickness = 0.5
+            }
+        writeSvg "15.svg" $
+          LineDistorsion
+            { pNoise = mkPerlin 100 5,
+              thickness = 0.2
+            }
+        writeSvg "16.svg" $
+          LineDistorsion
+            { pNoise = mkPerlin 100 5,
+              thickness = 0.2
+            }
