@@ -30,17 +30,15 @@ xSpace :: (Enum a, RealFloat a) => [a]
 xSpace = [1, 4 .. 200]
 
 -- function that introduces noise
-move :: Seed -> (Double, Double) -> (Double, Double)
-move seed (x, y) = ((val x), (val y))
+move :: Perlin -> (Double, Double) -> (Double, Double)
+move pNoise (x, y) = ((val x), (val y))
   where
     factor = 200.0
-    scale = 0.001
-    octaves = 10
-    val old = (+) old $ (*) factor $ noiseValue (perlin seed octaves scale 0.5) (x, y, 0)
+    val old = (+) old $ (*) factor $ noiseValue pNoise (x, y, 0)
 
-dot :: (Show a, RealFloat a) => Seed -> (Seed -> (a, a) -> (a, a)) -> (a, a) -> Element
-dot seed move xy =
-  let (movedX, movedY) = move seed xy
+dot :: (Show a, RealFloat a) => Perlin -> (Perlin -> (a, a) -> (a, a)) -> (a, a) -> Element
+dot pNoise move xy =
+  let (movedX, movedY) = move pNoise xy
    in circle_
         [ Cx_ <<- showR movedX,
           Cy_ <<- showR movedY,
@@ -48,24 +46,21 @@ dot seed move xy =
         ]
 
 dots :: DistorsionData -> Element
-dots (DistorsionData seed) = g_ [] $ mconcat $ P.map (dot seed move) xySpace
+dots (DistorsionData perlin) = g_ [] $ mconcat $ P.map (dot perlin move) xySpace
 
-lineSegment :: Seed -> (Double, Double) -> Double
-lineSegment seed (x, y) = (distort x)
+lineSegment :: Perlin -> (Double, Double) -> Double
+lineSegment pNoise (x, y) = (distort x)
   where
     factor = 300.0
-    -- scale = 0.05
-    scale = 0.001
-    octaves = 5
-    noise = noiseValue (perlin seed octaves scale 0.5) (x, y, 0)
-    distort old = (+) old $ (*) factor $ trace (show noise) $ noise
+    noise = noiseValue pNoise (x, y, 0)
+    distort old = (+) old $ (*) factor noise
 
-line :: Seed -> Double -> Element
-line seed x =
+line :: Perlin -> Double -> Element
+line pNoise x =
   path_
     [ D_
-        <<- ( mA (lineSegment seed (x, 0)) 0
-                <> (mconcat $ P.map (\y -> lA (lineSegment seed (x, y)) y) $ P.tail [0, 2 .. 200])
+        <<- ( mA (lineSegment pNoise (x, 0)) 0
+                <> (mconcat $ P.map (\y -> lA (lineSegment pNoise (x, y)) y) $ P.tail [0, 2 .. 200])
             ),
       Fill_ <<- "none",
       Stroke_ <<- "black",
@@ -73,13 +68,17 @@ line seed x =
     ]
 
 lineSet :: DistorsionData -> Element
-lineSet (DistorsionData seed) = g_ [] $ mconcat $ P.map (line seed) xSpace
+lineSet (DistorsionData perlin) = g_ [] $ mconcat $ P.map (line perlin) xSpace
 
-data DistorsionData = DistorsionData Seed
+
+type Octaves = Int
+data DistorsionData = DistorsionData Perlin
 
 main :: IO ()
 main =
   let writeSvg f g = renderToFile f $ svg g
+      mkPerlin seed octaves = perlin seed octaves 0.001 0.5
    in do
-        writeSvg "14.svg" $ lineSet $ DistorsionData 5
-        writeSvg "13.svg" $ lineSet $ DistorsionData 500
+        writeSvg "12.svg" $ lineSet $ DistorsionData $ mkPerlin 5 10
+        writeSvg "13.svg" $ lineSet $ DistorsionData $ mkPerlin 500 5
+        writeSvg "14.svg" $ lineSet $ DistorsionData $ mkPerlin 5 5
