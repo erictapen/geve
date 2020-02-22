@@ -30,57 +30,56 @@ xSpace :: (Enum a, RealFloat a) => [a]
 xSpace = [1, 4 .. 200]
 
 -- function that introduces noise
-move :: (Double, Double) -> (Double, Double)
-move (x, y) = ((val x), (val y))
+move :: Seed -> (Double, Double) -> (Double, Double)
+move seed (x, y) = ((val x), (val y))
   where
     factor = 200.0
-    seed :: Int
-    seed = round $ 5
     scale = 0.001
     octaves = 10
     val old = (+) old $ (*) factor $ noiseValue (perlin seed octaves scale 0.5) (x, y, 0)
 
-dot :: (Show a, RealFloat a) => ((a, a) -> (a, a)) -> (a, a) -> Element
-dot move xy =
-  let (movedX, movedY) = move xy
+dot :: (Show a, RealFloat a) => Seed -> (Seed -> (a, a) -> (a, a)) -> (a, a) -> Element
+dot seed move xy =
+  let (movedX, movedY) = move seed xy
    in circle_
         [ Cx_ <<- showR movedX,
           Cy_ <<- showR movedY,
           R_ <<- showR 0.5
         ]
 
-dots :: Element
-dots = g_ [] $ mconcat $ P.map (dot move) xySpace
+dots :: DistorsionData -> Element
+dots (DistorsionData seed) = g_ [] $ mconcat $ P.map (dot seed move) xySpace
 
-lineSegment :: (Double, Double) -> Double
-lineSegment (x, y) = (distort x)
+lineSegment :: Seed -> (Double, Double) -> Double
+lineSegment seed (x, y) = (distort x)
   where
     factor = 300.0
-    seed :: Int
-    seed = 500
     -- scale = 0.05
     scale = 0.001
     octaves = 5
     noise = noiseValue (perlin seed octaves scale 0.5) (x, y, 0)
     distort old = (+) old $ (*) factor $ trace (show noise) $ noise
 
-line :: Double -> Element
-line x =
+line :: Seed -> Double -> Element
+line seed x =
   path_
     [ D_
-        <<- ( mA (lineSegment (x, 0)) 0
-                <> (mconcat $ P.map (\y -> lA (lineSegment (x, y)) y) $ P.tail [0, 2 .. 200])
+        <<- ( mA (lineSegment seed (x, 0)) 0
+                <> (mconcat $ P.map (\y -> lA (lineSegment seed (x, y)) y) $ P.tail [0, 2 .. 200])
             ),
       Fill_ <<- "none",
       Stroke_ <<- "black",
       Stroke_width_ <<- "1px"
     ]
 
-lineSet :: Element
-lineSet = g_ [] $ mconcat $ P.map line xSpace
+lineSet :: DistorsionData -> Element
+lineSet (DistorsionData seed) = g_ [] $ mconcat $ P.map (line seed) xSpace
+
+data DistorsionData = DistorsionData Seed
 
 main :: IO ()
 main =
-  let writeSvg f g = writeFile f $ show $ svg g
+  let writeSvg f g = renderToFile f $ svg g
    in do
-        writeSvg "14.svg" $ lineSet
+        writeSvg "14.svg" $ lineSet $ DistorsionData 5
+        writeSvg "13.svg" $ lineSet $ DistorsionData 500
