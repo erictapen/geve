@@ -46,6 +46,7 @@ dot pNoise move xy =
           R_ <<- showR 0.5
         ]
 
+-- Part of a line, moved by some noise function
 lineSegment :: Perlin -> (Double, Double) -> Double
 lineSegment pNoise (x, y) = (distort x)
   where
@@ -53,6 +54,7 @@ lineSegment pNoise (x, y) = (distort x)
     noise = noiseValue pNoise (x, y, 0)
     distort old = (+) old $ (*) factor noise
 
+-- A whole Svg line, with a movement function, x position and thickness
 line :: Perlin -> LineThickness -> Double -> Element
 line pNoise thickness x =
   path_
@@ -65,10 +67,13 @@ line pNoise thickness x =
       Stroke_width_ <<- showR thickness
     ]
 
+-- Octaves value for Perlin noise
 type Octaves = Int
 
+-- Thickness of a line, in whatever units
 type LineThickness = Float
 
+-- Variants of the distortion graphics
 data Distorsion
   = LineDistorsion LineThickness Perlin
   | DotDistorsion Perlin
