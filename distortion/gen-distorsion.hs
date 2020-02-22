@@ -27,9 +27,6 @@ xySpace = [(x, y) | x <- range, y <- range]
   where
     range = [1, 4 .. 200]
 
-xSpace :: (Enum a, RealFloat a) => [a]
-xSpace = [1, 4 .. 200]
-
 -- function that introduces noise
 move :: Perlin -> (Double, Double) -> (Double, Double)
 move pNoise (x, y) = ((val x), (val y))
@@ -78,20 +75,22 @@ type LineThickness = Float
 data Distorsion
   = LineDistorsion
       { pNoise :: Perlin,
-        thickness :: LineThickness
+        thickness :: LineThickness,
+        xSpace :: [Double]
       }
   | DotDistorsion
       { pNoise :: Perlin
       }
 
 instance ToElement Distorsion where
-  toElement (LineDistorsion {pNoise, thickness}) = g_ [] $ mconcat $ P.map (line pNoise thickness) xSpace
+  toElement (LineDistorsion {pNoise, thickness, xSpace}) = g_ [] $ mconcat $ P.map (line pNoise thickness) xSpace
   toElement (DotDistorsion {pNoise}) = g_ [] $ mconcat $ P.map (dot pNoise move) xySpace
 
 main :: IO ()
 main =
   let writeSvg f g = renderToFile f $ svg $ toElement g
       mkPerlin seed octaves = perlin seed octaves 0.001 0.5
+      defaultXSpace = [100, 104 .. 300]
    in do
         writeSvg "10.svg" $
           DotDistorsion
@@ -101,25 +100,30 @@ main =
         writeSvg "12.svg" $
           LineDistorsion
             { pNoise = mkPerlin 5 10,
-              thickness = 1
+              thickness = 1,
+              xSpace = defaultXSpace
             }
         writeSvg "13.svg" $
           LineDistorsion
             { pNoise = mkPerlin 500 5,
-              thickness = 1
+              thickness = 1,
+              xSpace = defaultXSpace
             }
         writeSvg "14.svg" $
           LineDistorsion
             { pNoise = mkPerlin 5 5,
-              thickness = 0.5
+              thickness = 0.5,
+              xSpace = defaultXSpace
             }
         writeSvg "15.svg" $
           LineDistorsion
             { pNoise = mkPerlin 100 5,
-              thickness = 0.2
+              thickness = 0.2,
+              xSpace = defaultXSpace
             }
         writeSvg "16.svg" $
           LineDistorsion
             { pNoise = mkPerlin 100 5,
-              thickness = 0.2
+              thickness = 0.2,
+              xSpace = [100, 102 .. 300]
             }
