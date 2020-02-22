@@ -36,6 +36,7 @@ move pNoise (x, y) = ((val x), (val y))
     factor = 200.0
     val old = (+) old $ (*) factor $ noiseValue pNoise (x, y, 0)
 
+-- A single dot, that is moved by a function, e.g. noise
 dot :: (Show a, RealFloat a) => Perlin -> (Perlin -> (a, a) -> (a, a)) -> (a, a) -> Element
 dot pNoise move xy =
   let (movedX, movedY) = move pNoise xy
@@ -52,8 +53,8 @@ lineSegment pNoise (x, y) = (distort x)
     noise = noiseValue pNoise (x, y, 0)
     distort old = (+) old $ (*) factor noise
 
-line :: Perlin -> Double -> Element
-line pNoise x =
+line :: Perlin -> LineThickness -> Double -> Element
+line pNoise thickness x =
   path_
     [ D_
         <<- ( mA (lineSegment pNoise (x, 0)) 0
@@ -61,17 +62,19 @@ line pNoise x =
             ),
       Fill_ <<- "none",
       Stroke_ <<- "black",
-      Stroke_width_ <<- "1px"
+      Stroke_width_ <<- showR thickness
     ]
 
 type Octaves = Int
 
+type LineThickness = Float
+
 data Distorsion
-  = LineDistorsion Perlin
+  = LineDistorsion LineThickness Perlin
   | DotDistorsion Perlin
 
 instance ToElement Distorsion where
-  toElement (LineDistorsion pNoise) = g_ [] $ mconcat $ P.map (line pNoise) xSpace
+  toElement (LineDistorsion lineThickness pNoise) = g_ [] $ mconcat $ P.map (line pNoise lineThickness) xSpace
   toElement (DotDistorsion pNoise) = g_ [] $ mconcat $ P.map (dot pNoise move) xySpace
 
 main :: IO ()
@@ -80,6 +83,6 @@ main =
       mkPerlin seed octaves = perlin seed octaves 0.001 0.5
    in do
         writeSvg "10.svg" $ DotDistorsion $ mkPerlin 5 10
-        writeSvg "12.svg" $ LineDistorsion $ mkPerlin 5 10
-        writeSvg "13.svg" $ LineDistorsion $ mkPerlin 500 5
-        writeSvg "14.svg" $ LineDistorsion $ mkPerlin 5 5
+        writeSvg "12.svg" $ LineDistorsion 1 $ mkPerlin 5 10
+        writeSvg "13.svg" $ LineDistorsion 1 $ mkPerlin 500 5
+        writeSvg "14.svg" $ LineDistorsion 1 $ mkPerlin 5 5
