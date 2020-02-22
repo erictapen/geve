@@ -7,6 +7,8 @@ import Graphics.Svg
 import Numeric.Noise
 import Numeric.Noise.Perlin
 import Prelude as P
+import System.Directory
+import Control.Monad
 
 -- helper function for Text type
 showI :: Int -> Text
@@ -86,55 +88,61 @@ instance ToElement Distorsion where
   toElement (LineDistorsion {pNoise, thickness, xSpace}) = g_ [] $ mconcat $ P.map (line pNoise thickness) xSpace
   toElement (DotDistorsion {pNoise}) = g_ [] $ mconcat $ P.map (dot pNoise move) xySpace
 
+forceRewrite :: Bool
+forceRewrite = False
+
 main :: IO ()
 main =
   let writeSvg f g = renderToFile f $ svg $ toElement g
+      lazyWriteSvg f g = do
+        fileExists <- doesFileExist f
+        when (forceRewrite || not fileExists) $ writeSvg f g
       mkPerlin seed octaves = mkPerlinWithScale seed octaves 0.001
       mkPerlinWithScale seed octaves scale = perlin seed octaves scale 0.5
       defaultXSpace = [100, 104 .. 300]
    in do
-        writeSvg "10.svg" $
+        lazyWriteSvg "10.svg" $
           DotDistorsion
             { pNoise = mkPerlin 5 10
             }
         -- we have no 11.svg, as it was an accident
-        writeSvg "12.svg" $
+        lazyWriteSvg "12.svg" $
           LineDistorsion
             { pNoise = mkPerlin 5 10,
               thickness = 1,
               xSpace = defaultXSpace
             }
-        writeSvg "13.svg" $
+        lazyWriteSvg "13.svg" $
           LineDistorsion
             { pNoise = mkPerlin 500 5,
               thickness = 1,
               xSpace = defaultXSpace
             }
-        writeSvg "14.svg" $
+        lazyWriteSvg "14.svg" $
           LineDistorsion
             { pNoise = mkPerlin 5 5,
               thickness = 0.5,
               xSpace = defaultXSpace
             }
-        writeSvg "15.svg" $
+        lazyWriteSvg "15.svg" $
           LineDistorsion
             { pNoise = mkPerlin 100 5,
               thickness = 0.2,
               xSpace = defaultXSpace
             }
-        writeSvg "16.svg" $
+        lazyWriteSvg "16.svg" $
           LineDistorsion
             { pNoise = mkPerlin 100 5,
               thickness = 0.2,
               xSpace = [100, 101 .. 300]
             }
-        writeSvg "17.svg" $
+        lazyWriteSvg "17.svg" $
           LineDistorsion
             { pNoise = mkPerlin 150 10,
               thickness = 0.2,
               xSpace = [100, 100.5 .. 300]
             }
-        writeSvg "18.svg" $
+        lazyWriteSvg "18.svg" $
           LineDistorsion
             { pNoise = mkPerlinWithScale 300 3 0.002,
               thickness = 5,
