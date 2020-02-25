@@ -76,3 +76,14 @@ main =
               Triangle (Point 120 60) 160 (-60),
               Triangle (Point 180 60) 160 (-60)
             ]
+        writeSvg "03.svg"
+          $ g_
+            [ Transform_ <<- rotateAround (-45) 90 80
+            ]
+          $ mconcat
+          $ P.map
+            toElement
+            [ Triangle (Point 70 70) 140 (-70),
+              Triangle (Point 140 70) 140 (-70),
+              Triangle (Point 210 70) 140 (-70)
+            ]
