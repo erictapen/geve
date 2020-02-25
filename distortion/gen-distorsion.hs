@@ -24,11 +24,6 @@ svg content =
   doctype
     <> with (svg11_ content) [Version_ <<- "1.1", Width_ <<- "200", Height_ <<- "200"]
 
-xySpace :: (Enum a, RealFloat a) => [(a, a)]
-xySpace = [(x, y) | x <- range, y <- range]
-  where
-    range = [1, 4 .. 200]
-
 -- function that introduces noise
 move :: Perlin -> (Double, Double) -> (Double, Double)
 move pNoise (x, y) = ((val x), (val y))
@@ -37,13 +32,13 @@ move pNoise (x, y) = ((val x), (val y))
     val old = (+) old $ (*) factor $ noiseValue pNoise (x, y, 0)
 
 -- A single dot, that is moved by a function, e.g. noise
-dot :: (Show a, RealFloat a) => Perlin -> (Perlin -> (a, a) -> (a, a)) -> (a, a) -> Element
-dot pNoise move xy =
+dot :: (Show a, RealFloat a) => Perlin -> DotRadius -> (Perlin -> (a, a) -> (a, a)) -> (a, a) -> Element
+dot pNoise radius move xy =
   let (movedX, movedY) = move pNoise xy
    in circle_
         [ Cx_ <<- showR movedX,
           Cy_ <<- showR movedY,
-          R_ <<- showR 0.5
+          R_ <<- showR radius
         ]
 
 -- Part of a line, moved by some noise function
@@ -73,6 +68,8 @@ type Octaves = Int
 -- Thickness of a line, in whatever units
 type LineThickness = Float
 
+type DotRadius = Float
+
 -- Variants of the distorsion graphics
 data Distorsion
   = LineDistorsion
@@ -81,12 +78,14 @@ data Distorsion
         xSpace :: [Double]
       }
   | DotDistorsion
-      { pNoise :: Perlin
+      { pNoise :: Perlin,
+        radius :: DotRadius,
+        xySpace :: [(Double, Double)]
       }
 
 instance ToElement Distorsion where
   toElement (LineDistorsion {pNoise, thickness, xSpace}) = g_ [] $ mconcat $ P.map (line pNoise thickness) xSpace
-  toElement (DotDistorsion {pNoise}) = g_ [] $ mconcat $ P.map (dot pNoise move) xySpace
+  toElement (DotDistorsion {pNoise, radius, xySpace}) = g_ [] $ mconcat $ P.map (dot pNoise radius move) xySpace
 
 forceRewrite :: Bool
 forceRewrite = False
@@ -100,10 +99,16 @@ main =
       mkPerlin seed octaves = mkPerlinWithScale seed octaves 0.001
       mkPerlinWithScale seed octaves scale = perlin seed octaves scale 0.5
       defaultXSpace = [100, 104 .. 300]
+      defaultXYSpace = xySpace 3
+      xySpace stepSize = [(x, y) | x <- range, y <- range]
+        where
+          range = [0, stepSize .. 200]
    in do
         lazyWriteSvg "10.svg" $
           DotDistorsion
-            { pNoise = mkPerlin 5 10
+            { pNoise = mkPerlin 5 10,
+              radius = 0.5,
+              xySpace = defaultXYSpace
             }
         -- we have no 11.svg, as it was an accident
         lazyWriteSvg "12.svg" $
@@ -147,4 +152,10 @@ main =
             { pNoise = mkPerlinWithScale 300 3 0.002,
               thickness = 5,
               xSpace = [0, 20 .. 200]
+            }
+        writeSvg "19.svg" $
+          DotDistorsion
+            { pNoise = mkPerlinWithScale 300 3 0.002,
+              radius = 1,
+              xySpace = xySpace 7
             }
