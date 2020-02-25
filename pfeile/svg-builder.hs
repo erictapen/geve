@@ -45,21 +45,25 @@ instance ToElement Arrow where
 forceRewrite :: Bool
 forceRewrite = False
 
+-- simple type to represent wether something should be drawn or not
+data Draw = Y | N
+
 main :: IO ()
 main =
   let writeSvg f g = renderToFile f $ svg g
       lazyWriteSvg f g = do
         fileExists <- doesFileExist f
         when (forceRewrite || not fileExists) $ writeSvg f g
-      mkTriangle (point, render) =
-        if render == 0
-          then mempty
-          else toElement $ Triangle point 60 15
+      mkTriangle (point, Y) = toElement $ Triangle point 60 15
+      mkTriangle (_, N) = mempty
    in do
         writeSvg "01.svg" $ g_ [] $ mconcat $ P.map mkTriangle
           $ P.zip [(Point x y) | y <- [0, 30 .. 200], x <- [0, 15 .. (15 * 11)]]
-          $ [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-            ++ [1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1]
-            ++ [1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 1, 1]
-            ++ [1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1]
-            ++ [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+          $ [Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y]
+            ++ [Y, Y, N, Y, N, N, Y, Y, N, Y, N, Y]
+            ++ [Y, N, Y, N, Y, Y, N, N, Y, N, Y, Y]
+            ++ [Y, Y, N, Y, N, N, Y, Y, N, Y, N, Y]
+            ++ [Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y]
+
+
+
