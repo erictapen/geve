@@ -26,11 +26,16 @@ type BaseSize = Float
 
 type Length = Float
 
+type LengthFactor = Float
+
 data Point = Point Float Float
 
 data Arrow
   = Triangle Point BaseSize Length
+  | Arrow Point LengthFactor
   | NormalArrow Point
+  | ShortArrow Point
+  | LongArrow Point
 
 instance ToElement Arrow where
   toElement (Triangle (Point x y) baseSize length) =
@@ -43,21 +48,25 @@ instance ToElement Arrow where
         Fill_ <<- "black",
         Stroke_ <<- "none"
       ]
-  toElement (NormalArrow (Point x y)) =
-    let addXY px py = lA (x + px) (y + py)
+  toElement (Arrow (Point x y) lengthFactor) =
+    let addXY px py = lA (x + lengthFactor * px) (y + py)
      in path_
           [ D_
-              <<- ( mA (x + 0) (y + 5.292)
-                      <> addXY 0 15.875
-                      <> addXY 15.875 15.875
-                      <> addXY 15.875 21.167
-                      <> addXY 26.458 10.583
-                      <> addXY 15.875 0
-                      <> addXY 15.845 5.292
+              <<- ( mA (x + 0) (y + 0)
+                      <> addXY 0 5.292
+                      <> addXY 15.875 5.292
+                      <> addXY 15.875 10.583
+                      <> addXY 26.458 0
+                      <> addXY 15.875 (-10.583)
+                      <> addXY 15.845 (-5.292)
+                      <> addXY 0 (-5.292)
                   ),
             Fill_ <<- "black",
             Stroke_ <<- "none"
           ]
+  toElement (NormalArrow p) = toElement $ Arrow p 1.0
+  toElement (ShortArrow p) = toElement $ Arrow p 0.66
+  toElement (LongArrow p) = toElement $ Arrow p 1.377
 
 forceRewrite :: Bool
 forceRewrite = False
@@ -110,3 +119,11 @@ main =
                 P.map
                   mkArrow
                   [(Point x y) | y <- [0, 21.167 .. (7 * 21.167)], x <- [0, 26.458 .. (5 * 26.458)]]
+        writeSvg "06.svg" $
+          let mkArrow :: Float -> [Float] -> Float -> Element
+              mkArrow _ [] _ = mempty
+              mkArrow x (factor : fs) y = (toElement $ Arrow (Point x y) factor) <> mkArrow (x + factor * 26.458) fs y
+           in g_ [] $ mconcat $
+                P.map
+                  (mkArrow 0 [1.377, 0.66, 1.377, 0.66, 1, 1])
+                  [y | y <- [0, 21.167 .. (7 * 21.167)]]
