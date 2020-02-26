@@ -26,9 +26,11 @@ type BaseSize = Float
 
 type Length = Float
 
-data Arrow = Triangle Point BaseSize Length
-
 data Point = Point Float Float
+
+data Arrow
+  = Triangle Point BaseSize Length
+  | NormalArrow Point
 
 instance ToElement Arrow where
   toElement (Triangle (Point x y) baseSize length) =
@@ -41,6 +43,21 @@ instance ToElement Arrow where
         Fill_ <<- "black",
         Stroke_ <<- "none"
       ]
+  toElement (NormalArrow (Point x y)) =
+    let addXY px py = lA (x + px) (y + py)
+     in path_
+          [ D_
+              <<- ( mA (x + 0) (y + 5.292)
+                      <> addXY 0 15.875
+                      <> addXY 15.875 15.875
+                      <> addXY 15.875 21.167
+                      <> addXY 26.458 10.583
+                      <> addXY 15.875 0
+                      <> addXY 15.845 5.292
+                  ),
+            Fill_ <<- "black",
+            Stroke_ <<- "none"
+          ]
 
 forceRewrite :: Bool
 forceRewrite = False
@@ -87,3 +104,9 @@ main =
               Triangle (Point 140 70) 140 (-70),
               Triangle (Point 210 70) 140 (-70)
             ]
+        writeSvg "05.svg" $
+          let mkArrow p = toElement $ NormalArrow p
+           in g_ [] $ mconcat $
+                P.map
+                  mkArrow
+                  [(Point x y) | y <- [0, 21.167 .. (7 * 21.167)], x <- [0, 26.458 .. (5 * 26.458)]]
