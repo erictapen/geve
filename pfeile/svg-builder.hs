@@ -28,6 +28,8 @@ type Length = Float
 
 type LengthFactor = Float
 
+type Iterations = Int
+
 data Point = Point Float Float
 
 data Arrow
@@ -36,6 +38,8 @@ data Arrow
   | NormalArrow Point
   | ShortArrow Point
   | LongArrow Point
+  | ThinArrow Point
+  | InvertedArrowRow Point Iterations
 
 instance ToElement Arrow where
   toElement (Triangle (Point x y) baseSize length) =
@@ -67,6 +71,44 @@ instance ToElement Arrow where
   toElement (NormalArrow p) = toElement $ Arrow p 1.0
   toElement (ShortArrow p) = toElement $ Arrow p 0.66
   toElement (LongArrow p) = toElement $ Arrow p 1.377
+  toElement (ThinArrow (Point x y)) =
+    let addXY px py = lA (x + px) (y + py)
+     in path_
+          [ D_
+              <<- ( mA (x + 0) (y + 0)
+                      <> addXY 0 10
+                      <> addXY 60 10
+                      <> addXY 60 20
+                      <> addXY 100 0
+                      <> addXY 60 (-20)
+                      <> addXY 60 (-10)
+                      <> addXY 0 (-10)
+                  ),
+            Fill_ <<- "black",
+            Stroke_ <<- "none"
+          ]
+  toElement (InvertedArrowRow (Point x y) iterations) =
+    path_
+      [ D_ <<- (mA x y <> invertedArrowRow (Point x y) iterations),
+        Fill_ <<- "black",
+        Stroke_ <<- "none"
+      ]
+    where
+      invertedArrowRow :: Point -> Iterations -> Text
+      invertedArrowRow (Point x y) iterations =
+        if iterations == 0
+          then ""
+          else
+            let addXY px py = lA (x + px) (y + py)
+             in addXY 0 30
+                  <> addXY 60 30
+                  <> addXY 60 20
+                  <> addXY 100 40
+                  <> (invertedArrowRow (Point (x + 100) y) (iterations -1))
+                  <> addXY 100 (-40)
+                  <> addXY 60 (-20)
+                  <> addXY 60 (-30)
+                  <> addXY 0 (-30)
 
 forceRewrite :: Bool
 forceRewrite = False
@@ -127,3 +169,25 @@ main =
                 P.map
                   (mkArrow 0 [1.377, 0.66, 1.377, 0.66, 1, 1])
                   [y | y <- [0, 21.167 .. (7 * 21.167)]]
+        -- this seemed to complicated to me
+        -- writeSvg "07.svg" $
+        --   let mkArrow :: Float -> [Float] -> Float -> Element
+        --       mkArrow _ [] _ = mempty
+        --       mkArrow x (factor : fs) y = (toElement $ Arrow (Point x y) factor) <> mkArrow (x + factor * 26.458) fs y
+        --       mkLine :: [Float] -> Element
+        --       mkLine [] = mempty
+        --       mkLine (yfactor:fs) = mkArrow yfactor 0 [1.377, 0.66, 1.377, 0.66, 1, 1] <> mkLine fs
+        --    in g_ [] $
+        --           mkLine [y | y <- [0, 21.167 .. (7 * 21.167)]]
+        writeSvg "08.svg" $ 
+         let thinArrowRow :: Point -> Iterations -> Element
+             thinArrowRow (Point x y) iterations = if iterations == 0 then mempty else (toElement $ ThinArrow $ Point x y) <> thinArrowRow (Point (x+100) y) (iterations-1)
+             xi = 6
+            
+            in g_ [] $ 
+           thinArrowRow (Point 0 0) xi
+           <> thinArrowRow (Point 0 80) xi
+           <> (toElement $ InvertedArrowRow (Point 0 140) xi)
+           <> (toElement $ InvertedArrowRow (Point 0 220) xi)
+           <> thinArrowRow (Point 0 280) xi
+           <> thinArrowRow (Point 0 360) xi
