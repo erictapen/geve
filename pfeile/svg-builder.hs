@@ -76,13 +76,13 @@ instance ToElement Arrow where
      in path_
           [ D_
               <<- ( mA (x + 0) (y + 0)
-                      <> addXY 0 10
-                      <> addXY 60 10
-                      <> addXY 60 20
-                      <> addXY 100 0
-                      <> addXY 60 (-20)
-                      <> addXY 60 (-10)
-                      <> addXY 0 (-10)
+                      <> addXY 0 1
+                      <> addXY 6 1
+                      <> addXY 6 2
+                      <> addXY 10 0
+                      <> addXY 6 (-2)
+                      <> addXY 6 (-1)
+                      <> addXY 0 (-1)
                   ),
             Fill_ <<- "black",
             Stroke_ <<- "none"
@@ -100,15 +100,15 @@ instance ToElement Arrow where
           then ""
           else
             let addXY px py = lA (x + px) (y + py)
-             in addXY 0 30
-                  <> addXY 60 30
-                  <> addXY 60 20
-                  <> addXY 100 40
-                  <> (invertedArrowRow (Point (x + 100) y) (iterations -1))
-                  <> addXY 100 (-40)
-                  <> addXY 60 (-20)
-                  <> addXY 60 (-30)
-                  <> addXY 0 (-30)
+             in addXY 0 3
+                  <> addXY 6 3
+                  <> addXY 6 2
+                  <> addXY 10 4
+                  <> (invertedArrowRow (Point (x + 10) y) (iterations -1))
+                  <> addXY 10 (-4)
+                  <> addXY 6 (-2)
+                  <> addXY 6 (-3)
+                  <> addXY 0 (-3)
 
 forceRewrite :: Bool
 forceRewrite = False
@@ -169,7 +169,7 @@ main =
                 P.map
                   (mkArrow 0 [1.377, 0.66, 1.377, 0.66, 1, 1])
                   [y | y <- [0, 21.167 .. (7 * 21.167)]]
-        -- this seemed to complicated to me
+        -- this seemed too complicated to me
         -- writeSvg "07.svg" $
         --   let mkArrow :: Float -> [Float] -> Float -> Element
         --       mkArrow _ [] _ = mempty
@@ -179,15 +179,24 @@ main =
         --       mkLine (yfactor:fs) = mkArrow yfactor 0 [1.377, 0.66, 1.377, 0.66, 1, 1] <> mkLine fs
         --    in g_ [] $
         --           mkLine [y | y <- [0, 21.167 .. (7 * 21.167)]]
-        writeSvg "08.svg" $ 
-         let thinArrowRow :: Point -> Iterations -> Element
-             thinArrowRow (Point x y) iterations = if iterations == 0 then mempty else (toElement $ ThinArrow $ Point x y) <> thinArrowRow (Point (x+100) y) (iterations-1)
-             xi = 6
-            
-            in g_ [] $ 
-           thinArrowRow (Point 0 0) xi
-           <> thinArrowRow (Point 0 80) xi
-           <> (toElement $ InvertedArrowRow (Point 0 140) xi)
-           <> (toElement $ InvertedArrowRow (Point 0 220) xi)
-           <> thinArrowRow (Point 0 280) xi
-           <> thinArrowRow (Point 0 360) xi
+        writeSvg "08.svg" $
+          let thinArrowRow :: Point -> Iterations -> Element
+              thinArrowRow (Point x y) iterations =
+                if iterations == 0
+                  then mempty
+                  else
+                    (toElement $ ThinArrow $ Point x y)
+                      <> thinArrowRow (Point (x + 10) y) (iterations -1)
+              -- how many iterations do we want to do in x-direction?
+              xi = 6
+           in g_ [] $
+                thinArrowRow (Point 0 0) xi
+                  <> thinArrowRow (Point 0 8) xi
+                  <> (toElement $ InvertedArrowRow (Point 0 14) xi)
+                  <> (toElement $ InvertedArrowRow (Point 0 22) xi)
+                  <> thinArrowRow (Point 0 28) xi
+                  <> thinArrowRow (Point 0 36) xi
+                  <> (toElement $ InvertedArrowRow (Point 0 42) xi)
+                  <> (toElement $ InvertedArrowRow (Point 0 50) xi)
+                  <> thinArrowRow (Point 0 56) xi
+                  <> thinArrowRow (Point 0 64) xi
