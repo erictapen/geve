@@ -189,8 +189,11 @@ main =
                       <> thinArrowRow (Point (x + 10) y) (iterations -1)
               -- how many iterations do we want to do in x-direction?
               xi = 6
-           in g_ [] $
-                thinArrowRow (Point 0 0) xi
+           in g_
+                [ Transform_ <<- translate 50 50
+                    <> scale 2 2
+                ]
+                $ thinArrowRow (Point 0 0) xi
                   <> thinArrowRow (Point 0 8) xi
                   <> (toElement $ InvertedArrowRow (Point 0 14) xi)
                   <> (toElement $ InvertedArrowRow (Point 0 22) xi)
