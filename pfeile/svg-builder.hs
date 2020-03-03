@@ -30,6 +30,8 @@ type LengthFactor = Float
 
 type Iterations = Int
 
+type Amount = Int
+
 data Point = Point Float Float
 
 data Arrow
@@ -40,6 +42,7 @@ data Arrow
   | LongArrow Point
   | ThinArrow Point
   | InvertedArrowRow Point Iterations
+  | ThinArrowRow Point Iterations
 
 instance ToElement Arrow where
   toElement (Triangle (Point x y) baseSize length) =
@@ -109,6 +112,12 @@ instance ToElement Arrow where
                   <> addXY 6 (-2)
                   <> addXY 6 (-3)
                   <> addXY 0 (-3)
+  toElement (ThinArrowRow (Point x y) iterations) =
+    if iterations == 0
+      then mempty
+      else
+        (toElement $ ThinArrow $ Point x y)
+          <> toElement (ThinArrowRow (Point (x + 10) y) (iterations -1))
 
 forceRewrite :: Bool
 forceRewrite = False
@@ -180,26 +189,27 @@ main =
         --    in g_ [] $
         --           mkLine [y | y <- [0, 21.167 .. (7 * 21.167)]]
         writeSvg "08.svg" $
-          let thinArrowRow :: Point -> Iterations -> Element
-              thinArrowRow (Point x y) iterations =
-                if iterations == 0
-                  then mempty
-                  else
-                    (toElement $ ThinArrow $ Point x y)
-                      <> thinArrowRow (Point (x + 10) y) (iterations -1)
-              -- how many iterations do we want to do in x-direction?
+          let -- how many iterations do we want to do in x-direction?
               xi = 6
+              f :: Float -> [Either Float Float] -> [Element]
+              f _ [] = mempty
+              f state ((Left y) : ls) = (toElement $ ThinArrowRow (Point 0 state) xi) : (f (state + y) ls)
+              f state ((Right y) : ls) = (toElement $ InvertedArrowRow (Point 0 state) xi) : (f (state + y) ls)
            in g_
                 [ Transform_ <<- translate 50 50
                     <> scale 2 2
                 ]
-                $ thinArrowRow (Point 0 0) xi
-                  <> thinArrowRow (Point 0 8) xi
-                  <> (toElement $ InvertedArrowRow (Point 0 14) xi)
-                  <> (toElement $ InvertedArrowRow (Point 0 22) xi)
-                  <> thinArrowRow (Point 0 28) xi
-                  <> thinArrowRow (Point 0 36) xi
-                  <> (toElement $ InvertedArrowRow (Point 0 42) xi)
-                  <> (toElement $ InvertedArrowRow (Point 0 50) xi)
-                  <> thinArrowRow (Point 0 56) xi
-                  <> thinArrowRow (Point 0 64) xi
+                $ mconcat
+                $ f
+                  0
+                  [ Left 8,
+                    Left 6,
+                    Right 8,
+                    Right 6,
+                    Left 8,
+                    Left 6,
+                    Right 8,
+                    Right 6,
+                    Left 8,
+                    Left 6
+                  ]
