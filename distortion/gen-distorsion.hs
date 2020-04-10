@@ -1,14 +1,14 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
 
+import Control.Monad
 import Data.Text
 import Debug.Trace
 import Graphics.Svg
 import Numeric.Noise
 import Numeric.Noise.Perlin
-import Prelude as P
 import System.Directory
-import Control.Monad
+import Prelude as P
 
 -- helper function for Text type
 showI :: Int -> Text
@@ -103,6 +103,7 @@ main =
       xySpace stepSize = [(x, y) | x <- range, y <- range]
         where
           range = [0, stepSize .. 200]
+      xSpace stepSize = [100, 100 + stepSize .. 300]
    in do
         lazyWriteSvg "10.svg" $
           DotDistorsion
@@ -153,9 +154,69 @@ main =
               thickness = 5,
               xSpace = [0, 20 .. 200]
             }
-        writeSvg "19.svg" $
+        lazyWriteSvg "19.svg" $
           DotDistorsion
             { pNoise = mkPerlinWithScale 300 3 0.002,
               radius = 1,
               xySpace = xySpace 7
+            }
+        lazyWriteSvg "20.svg" $
+          DotDistorsion
+            { pNoise = mkPerlinWithScale 350 3 0.002,
+              radius = 2,
+              xySpace = xySpace 7
+            }
+        lazyWriteSvg "21.svg" $
+          DotDistorsion
+            { pNoise = mkPerlinWithScale 400 15 0.0008,
+              radius = 0.5,
+              xySpace = xySpace 1
+            }
+        lazyWriteSvg "22.svg" $
+          DotDistorsion
+            { pNoise = mkPerlinWithScale 410 15 0.0008,
+              radius = 0.45,
+              xySpace = xySpace 1
+            }
+        lazyWriteSvg "23.svg" $
+          LineDistorsion
+            { pNoise = mkPerlinWithScale 410 15 0.0008,
+              thickness = 0.30,
+              xSpace = defaultXSpace
+            }
+        lazyWriteSvg "24.svg" $
+          LineDistorsion
+            { pNoise = mkPerlinWithScale 420 10 0.008,
+              thickness = 0.20,
+              xSpace = xSpace 0.5
+            }
+        lazyWriteSvg "25.svg" $
+          LineDistorsion
+            { pNoise = mkPerlinWithScale 460 3 0.0019,
+              thickness = 0.5,
+              xSpace = xSpace 5
+            }
+        lazyWriteSvg "26.svg" $
+          LineDistorsion
+            { pNoise = mkPerlinWithScale 483 3 0.002,
+              thickness = 0.8,
+              xSpace = xSpace 10
+            }
+        lazyWriteSvg "27.svg" $
+          LineDistorsion
+            { pNoise = mkPerlinWithScale 485 3 0.002,
+              thickness = 0.40,
+              xSpace = xSpace 1
+            }
+        writeSvg "28.svg" $
+          LineDistorsion
+            { pNoise = mkPerlinWithScale 486 3 0.003,
+              thickness = 0.30,
+              xSpace = xSpace 2.5
+            }
+        writeSvg "29.svg" $
+          LineDistorsion
+            { pNoise = mkPerlinWithScale 490 13 0.001,
+              thickness = 0.10,
+              xSpace = xSpace 0.5
             }
