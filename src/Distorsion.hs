@@ -212,13 +212,13 @@ generateSvg =
               thickness = 0.40,
               xSpace = xSpace 1
             }
-        writeSvg "28.svg" $
+        lazyWriteSvg "28.svg" $
           LineDistorsion
             { pNoise = mkPerlinWithScale 486 3 0.003,
               thickness = 0.30,
               xSpace = xSpace 2.5
             }
-        writeSvg "29.svg" $
+        lazyWriteSvg "29.svg" $
           LineDistorsion
             { pNoise = mkPerlinWithScale 490 13 0.001,
               thickness = 0.10,

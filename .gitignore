@@ -1,2 +1,7 @@
+result*
 *.swp
 *.png
+archive
+*.svg
+stack.yaml.lock
+.stack-work
