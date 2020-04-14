@@ -1,5 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
+module Linien where
+
 import Data.List as DL
 import Data.Text
 import Graphics.Svg
@@ -126,9 +128,9 @@ instance ToElement LineCircle where
                 (center2 <> (Point (r2 * cos angle) (r2 * sin angle)))
        in mconcat $ P.map line $ zip3 angles thicknesses1 thicknesses2
 
-main :: IO ()
-main =
-  let writeSvg f g = writeFile f $ show $ svg g
+generateSvg :: IO ()
+generateSvg =
+  let writeSvg f g = writeFile ("./cache/linien-" ++ f) $ show $ svg g
       p1 = Point 0 0
       p2 = Point 0 100
       l1 = toElement $ SimpleLine 10 p1 p2
@@ -139,11 +141,11 @@ main =
       p6 = Point 200 100
       l3 = toElement $ ComplexLine [5, 10, 5, 10, 5, 30] p5 p6
    in do
-        writeSvg "./lines.svg" $ l1 <> l2 <> l3
-        writeSvg "./linecircle1.svg" $ toElement $
+        writeSvg "lines.svg" $ l1 <> l2 <> l3
+        writeSvg "linecircle1.svg" $ toElement $
           let centerPoint = Point 100 100
            in LineCircle (Circle centerPoint 100) (Circle centerPoint 50) 64 1
-        writeSvg "./linecircle2.svg" $
+        writeSvg "linecircle2.svg" $
           let centerPoint = Point 100 100
            in toElement
                 ( VariableThicknessLineCircle
@@ -161,7 +163,7 @@ main =
                       (\s -> 1 * (1 + cos (s + pi)))
                       (\s -> 1 * (1 + cos (s)))
                   )
-        writeSvg "./linecircle3.svg" $
+        writeSvg "linecircle3.svg" $
           let center1 = Point 102 92
               center2 = Point 92 102
               outer = \s -> 1 * (1 + sin (0.5 * pi + s))

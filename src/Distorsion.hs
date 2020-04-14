@@ -1,6 +1,8 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
 
+module Distorsion where
+
 import Control.Monad
 import Data.Text
 import Debug.Trace
@@ -90,12 +92,14 @@ instance ToElement Distorsion where
 forceRewrite :: Bool
 forceRewrite = False
 
-main :: IO ()
-main =
+generateSvg :: IO ()
+generateSvg =
   let writeSvg f g = renderToFile f $ svg $ toElement g
-      lazyWriteSvg f g = do
-        fileExists <- doesFileExist f
-        when (forceRewrite || not fileExists) $ writeSvg f g
+      lazyWriteSvg f g =
+        let file = "./cache/distorsion-" ++ f
+         in do
+              fileExists <- doesFileExist file
+              when (forceRewrite || not fileExists) $ writeSvg file g
       mkPerlin seed octaves = mkPerlinWithScale seed octaves 0.001
       mkPerlinWithScale seed octaves scale = perlin seed octaves scale 0.5
       defaultXSpace = [100, 104 .. 300]

@@ -1,6 +1,8 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
 
+module Pfeile where
+
 import Control.Monad
 import Data.Text
 import Debug.Trace
@@ -125,12 +127,9 @@ forceRewrite = False
 -- simple type to represent wether something should be drawn or not
 data Draw = Y | N
 
-main :: IO ()
-main =
-  let writeSvg f g = renderToFile f $ svg g
-      lazyWriteSvg f g = do
-        fileExists <- doesFileExist f
-        when (forceRewrite || not fileExists) $ writeSvg f g
+generateSvg :: IO ()
+generateSvg =
+  let writeSvg f g = renderToFile ("./cache/pfeile-" ++ f) $ svg g
    in do
         writeSvg "01.svg" $
           let mkTriangle (point, Y) = toElement $ Triangle point 60 15

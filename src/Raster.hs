@@ -2,9 +2,11 @@
 
 module Raster where
 
+import Control.Monad
 import Data.Text
 import Debug.Trace
 import Graphics.Svg
+import System.Directory
 import Prelude as P
 
 -- helper function for Text type
@@ -205,3 +207,11 @@ triangleRasterResult getBrightness =
         $ P.map (triangleRaster getBrightness)
         $ P.zip (P.take 25 [1.0, 1.20 ..]) boxCoordinates
     )
+
+generateSvg :: IO ()
+generateSvg =
+  let lazyWriteSvg f g = do
+        fileExists <- doesFileExist f
+        when (not fileExists) $ renderToFile f g
+   in do
+        lazyWriteSvg "./cache/raster-triangle.svg" $ triangleRasterResult $ \(_, _) -> 0.5

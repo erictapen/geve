@@ -1,3 +1,5 @@
+-- THIS DOES NOT WORK YET
+
 import Codec.Picture
 import Codec.Picture.Types
 import Data.Either.Unwrap

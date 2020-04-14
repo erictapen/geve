@@ -1,5 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
+module Fläche where
+
 import Data.Text
 import Graphics.Svg
 
@@ -53,7 +55,8 @@ randomQuad (x, y) =
         Stroke_ <<- "none"
       ]
 
-main :: IO ()
-main = do
-  print $ svg $
-    basicRectGrid <> randomQuad (15, 15)
+generateSvg :: IO ()
+generateSvg = do
+  let writeSvg f g = renderToFile f g
+   in writeSvg "./cache/fläche-01.svg" $ svg $
+        basicRectGrid <> randomQuad (15, 15)
