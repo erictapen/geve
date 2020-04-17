@@ -20,12 +20,6 @@ showI i = pack $ show i
 showR :: (Show a, RealFloat a) => a -> Text
 showR r = pack $ show r
 
--- document root
-svg :: Element -> Element
-svg content =
-  doctype
-    <> with (svg11_ content) [Version_ <<- "1.1", Width_ <<- "200", Height_ <<- "200"]
-
 -- function that introduces noise
 move :: Perlin -> (Double, Double) -> (Double, Double)
 move pNoise (x, y) = ((val x), (val y))
@@ -89,138 +83,189 @@ instance ToElement Distorsion where
   toElement (LineDistorsion {pNoise, thickness, xSpace}) = g_ [] $ mconcat $ P.map (line pNoise thickness) xSpace
   toElement (DotDistorsion {pNoise, radius, xySpace}) = g_ [] $ mconcat $ P.map (dot pNoise radius move) xySpace
 
-forceRewrite :: Bool
-forceRewrite = False
+mkPerlin seed octaves = mkPerlinWithScale seed octaves 0.001
 
-generateSvg :: IO ()
-generateSvg =
-  let writeSvg f g = renderToFile f $ svg $ toElement g
-      lazyWriteSvg f g =
-        let file = "./cache/distorsion-" ++ f
-         in do
-              fileExists <- doesFileExist file
-              when (forceRewrite || not fileExists) $ writeSvg file g
-      mkPerlin seed octaves = mkPerlinWithScale seed octaves 0.001
-      mkPerlinWithScale seed octaves scale = perlin seed octaves scale 0.5
-      defaultXSpace = [100, 104 .. 300]
-      defaultXYSpace = xySpace 3
-      xySpace stepSize = [(x, y) | x <- range, y <- range]
-        where
-          range = [0, stepSize .. 200]
-      xSpace stepSize = [100, 100 + stepSize .. 300]
-   in do
-        lazyWriteSvg "10.svg" $
-          DotDistorsion
-            { pNoise = mkPerlin 5 10,
-              radius = 0.5,
-              xySpace = defaultXYSpace
-            }
-        -- we have no 11.svg, as it was an accident
-        lazyWriteSvg "12.svg" $
-          LineDistorsion
-            { pNoise = mkPerlin 5 10,
-              thickness = 1,
-              xSpace = defaultXSpace
-            }
-        lazyWriteSvg "13.svg" $
-          LineDistorsion
-            { pNoise = mkPerlin 500 5,
-              thickness = 1,
-              xSpace = defaultXSpace
-            }
-        lazyWriteSvg "14.svg" $
-          LineDistorsion
-            { pNoise = mkPerlin 5 5,
-              thickness = 0.5,
-              xSpace = defaultXSpace
-            }
-        lazyWriteSvg "15.svg" $
-          LineDistorsion
-            { pNoise = mkPerlin 100 5,
-              thickness = 0.2,
-              xSpace = defaultXSpace
-            }
-        lazyWriteSvg "16.svg" $
-          LineDistorsion
-            { pNoise = mkPerlin 100 5,
-              thickness = 0.2,
-              xSpace = [100, 101 .. 300]
-            }
-        lazyWriteSvg "17.svg" $
-          LineDistorsion
-            { pNoise = mkPerlin 150 10,
-              thickness = 0.2,
-              xSpace = [100, 100.5 .. 300]
-            }
-        lazyWriteSvg "18.svg" $
-          LineDistorsion
-            { pNoise = mkPerlinWithScale 300 3 0.002,
-              thickness = 5,
-              xSpace = [0, 20 .. 200]
-            }
-        lazyWriteSvg "19.svg" $
-          DotDistorsion
-            { pNoise = mkPerlinWithScale 300 3 0.002,
-              radius = 1,
-              xySpace = xySpace 7
-            }
-        lazyWriteSvg "20.svg" $
-          DotDistorsion
-            { pNoise = mkPerlinWithScale 350 3 0.002,
-              radius = 2,
-              xySpace = xySpace 7
-            }
-        lazyWriteSvg "21.svg" $
-          DotDistorsion
-            { pNoise = mkPerlinWithScale 400 15 0.0008,
-              radius = 0.5,
-              xySpace = xySpace 1
-            }
-        lazyWriteSvg "22.svg" $
-          DotDistorsion
-            { pNoise = mkPerlinWithScale 410 15 0.0008,
-              radius = 0.45,
-              xySpace = xySpace 1
-            }
-        lazyWriteSvg "23.svg" $
-          LineDistorsion
-            { pNoise = mkPerlinWithScale 410 15 0.0008,
-              thickness = 0.30,
-              xSpace = defaultXSpace
-            }
-        lazyWriteSvg "24.svg" $
-          LineDistorsion
-            { pNoise = mkPerlinWithScale 420 10 0.008,
-              thickness = 0.20,
-              xSpace = xSpace 0.5
-            }
-        lazyWriteSvg "25.svg" $
-          LineDistorsion
-            { pNoise = mkPerlinWithScale 460 3 0.0019,
-              thickness = 0.5,
-              xSpace = xSpace 5
-            }
-        lazyWriteSvg "26.svg" $
-          LineDistorsion
-            { pNoise = mkPerlinWithScale 483 3 0.002,
-              thickness = 0.8,
-              xSpace = xSpace 10
-            }
-        lazyWriteSvg "27.svg" $
-          LineDistorsion
-            { pNoise = mkPerlinWithScale 485 3 0.002,
-              thickness = 0.40,
-              xSpace = xSpace 1
-            }
-        lazyWriteSvg "28.svg" $
-          LineDistorsion
-            { pNoise = mkPerlinWithScale 486 3 0.003,
-              thickness = 0.30,
-              xSpace = xSpace 2.5
-            }
-        lazyWriteSvg "29.svg" $
-          LineDistorsion
-            { pNoise = mkPerlinWithScale 490 13 0.001,
-              thickness = 0.10,
-              xSpace = xSpace 0.5
-            }
+mkPerlinWithScale seed octaves scale = perlin seed octaves scale 0.5
+
+defaultXSpace = [100, 104 .. 300]
+
+defaultXYSpace = mkXYSpace 3
+
+mkXYSpace stepSize = [(x, y) | x <- range, y <- range]
+  where
+    range = [0, stepSize .. 200]
+
+mkXSpace stepSize = [100, 100 + stepSize .. 300]
+
+distorsion10 :: Element
+distorsion10 =
+  toElement $
+    DotDistorsion
+      { pNoise = mkPerlin 5 10,
+        radius = 0.5,
+        xySpace = defaultXYSpace
+      }
+
+-- we have no 11.svg, as it was an accident
+
+distorsion12 :: Element
+distorsion12 =
+  toElement $
+    LineDistorsion
+      { pNoise = mkPerlin 5 10,
+        thickness = 1,
+        xSpace = defaultXSpace
+      }
+
+distorsion13 :: Element
+distorsion13 =
+  toElement $
+    LineDistorsion
+      { pNoise = mkPerlin 500 5,
+        thickness = 1,
+        xSpace = defaultXSpace
+      }
+
+distorsion14 :: Element
+distorsion14 =
+  toElement $
+    LineDistorsion
+      { pNoise = mkPerlin 5 5,
+        thickness = 0.5,
+        xSpace = defaultXSpace
+      }
+
+distorsion15 :: Element
+distorsion15 =
+  toElement $
+    LineDistorsion
+      { pNoise = mkPerlin 100 5,
+        thickness = 0.2,
+        xSpace = defaultXSpace
+      }
+
+distorsion16 :: Element
+distorsion16 =
+  toElement $
+    LineDistorsion
+      { pNoise = mkPerlin 100 5,
+        thickness = 0.2,
+        xSpace = [100, 101 .. 300]
+      }
+
+distorsion17 :: Element
+distorsion17 =
+  toElement $
+    LineDistorsion
+      { pNoise = mkPerlin 150 10,
+        thickness = 0.2,
+        xSpace = [100, 100.5 .. 300]
+      }
+
+distorsion18 :: Element
+distorsion18 =
+  toElement $
+    LineDistorsion
+      { pNoise = mkPerlinWithScale 300 3 0.002,
+        thickness = 5,
+        xSpace = [0, 20 .. 200]
+      }
+
+distorsion19 :: Element
+distorsion19 =
+  toElement $
+    DotDistorsion
+      { pNoise = mkPerlinWithScale 300 3 0.002,
+        radius = 1,
+        xySpace = mkXYSpace 7
+      }
+
+distorsion20 :: Element
+distorsion20 =
+  toElement $
+    DotDistorsion
+      { pNoise = mkPerlinWithScale 350 3 0.002,
+        radius = 2,
+        xySpace = mkXYSpace 7
+      }
+
+distorsion21 :: Element
+distorsion21 =
+  toElement $
+    DotDistorsion
+      { pNoise = mkPerlinWithScale 400 15 0.0008,
+        radius = 0.5,
+        xySpace = mkXYSpace 1
+      }
+
+distorsion22 :: Element
+distorsion22 =
+  toElement $
+    DotDistorsion
+      { pNoise = mkPerlinWithScale 410 15 0.0008,
+        radius = 0.45,
+        xySpace = mkXYSpace 1
+      }
+
+distorsion23 :: Element
+distorsion23 =
+  toElement $
+    LineDistorsion
+      { pNoise = mkPerlinWithScale 410 15 0.0008,
+        thickness = 0.30,
+        xSpace = defaultXSpace
+      }
+
+distorsion24 :: Element
+distorsion24 =
+  toElement $
+    LineDistorsion
+      { pNoise = mkPerlinWithScale 420 10 0.008,
+        thickness = 0.20,
+        xSpace = mkXSpace 0.5
+      }
+
+distorsion25 :: Element
+distorsion25 =
+  toElement $
+    LineDistorsion
+      { pNoise = mkPerlinWithScale 460 3 0.0019,
+        thickness = 0.5,
+        xSpace = mkXSpace 5
+      }
+
+distorsion26 :: Element
+distorsion26 =
+  toElement $
+    LineDistorsion
+      { pNoise = mkPerlinWithScale 483 3 0.002,
+        thickness = 0.8,
+        xSpace = mkXSpace 10
+      }
+
+distorsion27 :: Element
+distorsion27 =
+  toElement $
+    LineDistorsion
+      { pNoise = mkPerlinWithScale 485 3 0.002,
+        thickness = 0.40,
+        xSpace = mkXSpace 1
+      }
+
+distorsion28 :: Element
+distorsion28 =
+  toElement $
+    LineDistorsion
+      { pNoise = mkPerlinWithScale 486 3 0.003,
+        thickness = 0.30,
+        xSpace = mkXSpace 2.5
+      }
+
+distorsion29 :: Element
+distorsion29 =
+  toElement $
+    LineDistorsion
+      { pNoise = mkPerlinWithScale 490 13 0.001,
+        thickness = 0.10,
+        xSpace = mkXSpace 0.5
+      }
