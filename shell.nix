@@ -11,5 +11,6 @@ pkgs.mkShell {
       hsnoise
       Noise
     ]))
+    stack
   ];
 }
