@@ -15,3 +15,7 @@ If you are using Nix and want to skip the `stack` part, you should be fine with 
 ## The `cache` dir
 
 After running, the `cache` directory is populated with images. Most of the images are generated only if they can't be found in the cache, so if you modify the source code you might need to delete the files in `cache` before rerunning the program.
+
+## Code format
+
+The code is formatted with [ormolu](https://github.com/tweag/ormolu). To format every Haskell source file in the repository, you can run `ormolu --mode inplace $(find src/ -name '*.hs')`.
