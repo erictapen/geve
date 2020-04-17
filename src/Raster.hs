@@ -21,12 +21,6 @@ showR r = pack $ show r
 degToRad :: RealFloat a => a -> a
 degToRad d = d * pi / 180
 
--- document root
-svg :: Element -> Element
-svg content =
-  doctype
-    <> with (svg11_ content) [Version_ <<- "1.1", Width_ <<- "200", Height_ <<- "200"]
-
 -- SVG element that can be used to hide some parts of another element.  In this
 -- case we want to have boundary boxes for all the stuff.
 clipPath :: Element
@@ -80,9 +74,8 @@ quadRaster getBrightness (stepsize, (x, y)) =
 -- Whole page for quadRaster
 quadRasterResult :: (Show a, Enum a, RealFloat a) => ((a, a) -> a) -> Element
 quadRasterResult getBrightness =
-  svg $
-    clipPath
-      <> (mconcat $ P.map (quadRaster getBrightness) $ P.zip [1.0, 1.1 .. 3.4] boxCoordinates)
+  clipPath
+    <> (mconcat $ P.map (quadRaster getBrightness) $ P.zip [1.0, 1.1 .. 3.4] boxCoordinates)
 
 -- one simple dot which is a hexagon
 hexDot ::
@@ -138,8 +131,7 @@ hexRaster getBrightness (size, (x, y)) =
 -- whole page for hexRaster
 hexRasterResult :: (Show a, Enum a, RealFloat a) => ((a, a) -> a) -> Element
 hexRasterResult getBrightness =
-  svg
-    $ mconcat
+  mconcat
     $ P.map (hexRaster getBrightness)
     $ P.zip (P.take 25 [0.3, 0.45 ..]) boxCoordinates
 
@@ -200,18 +192,9 @@ triangleRaster getBrightness (size, (x, y)) =
     coordSpace = [(x, y) | x <- range, y <- range]
 
 -- whole page for triangleRaster
-triangleRasterResult :: (Show a, Enum a, RealFloat a) => ((a, a) -> a) -> Element
-triangleRasterResult getBrightness =
-  svg $
-    ( mconcat
+triangleRasterResult :: Element
+triangleRasterResult =
+  let getBrightness = \(_, _) -> 0.5
+   in mconcat
         $ P.map (triangleRaster getBrightness)
         $ P.zip (P.take 25 [1.0, 1.20 ..]) boxCoordinates
-    )
-
-generateSvg :: IO ()
-generateSvg =
-  let lazyWriteSvg f g = do
-        fileExists <- doesFileExist f
-        when (not fileExists) $ renderToFile f g
-   in do
-        lazyWriteSvg "./cache/raster-triangle.svg" $ triangleRasterResult $ \(_, _) -> 0.5

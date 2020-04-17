@@ -18,12 +18,6 @@ showI i = pack $ show i
 showR :: (Show a, RealFloat a) => a -> Text
 showR r = pack $ show r
 
--- document root
-svg :: Element -> Element
-svg content =
-  doctype
-    <> with (svg11_ content) [Version_ <<- "1.1", Width_ <<- "200", Height_ <<- "200"]
-
 type BaseSize = Float
 
 type Length = Float
@@ -121,94 +115,88 @@ instance ToElement Arrow where
         (toElement $ ThinArrow $ Point x y)
           <> toElement (ThinArrowRow (Point (x + 10) y) (iterations -1))
 
-forceRewrite :: Bool
-forceRewrite = False
-
 -- simple type to represent wether something should be drawn or not
 data Draw = Y | N
 
-generateSvg :: IO ()
-generateSvg =
-  let writeSvg f g = renderToFile ("./cache/pfeile-" ++ f) $ svg g
-   in do
-        writeSvg "01.svg" $
-          let mkTriangle (point, Y) = toElement $ Triangle point 60 15
-              mkTriangle (_, N) = mempty
-           in g_ [] $ mconcat $ P.map mkTriangle
-                $ P.zip [(Point x y) | y <- [0, 30 .. 200], x <- [0, 15 .. (15 * 11)]]
-                $ [Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y]
-                  ++ [Y, Y, N, Y, N, N, Y, Y, N, Y, N, Y]
-                  ++ [Y, N, Y, N, Y, Y, N, N, Y, N, Y, Y]
-                  ++ [Y, Y, N, Y, N, N, Y, Y, N, Y, N, Y]
-                  ++ [Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y]
-        writeSvg "02.svg"
-          $ g_
-            [ Transform_ <<- rotateAround (-45) 90 80
-            ]
-          $ mconcat
-          $ P.map
-            toElement
-            [ Triangle (Point 60 60) 160 (-60),
-              Triangle (Point 120 60) 160 (-60),
-              Triangle (Point 180 60) 160 (-60)
-            ]
-        writeSvg "03.svg"
-          $ g_
-            [ Transform_ <<- rotateAround (-45) 90 80
-            ]
-          $ mconcat
-          $ P.map
-            toElement
-            [ Triangle (Point 70 70) 140 (-70),
-              Triangle (Point 140 70) 140 (-70),
-              Triangle (Point 210 70) 140 (-70)
-            ]
-        writeSvg "05.svg" $
-          let mkArrow p = toElement $ NormalArrow p
-           in g_ [] $ mconcat $
-                P.map
-                  mkArrow
-                  [(Point x y) | y <- [0, 21.167 .. (7 * 21.167)], x <- [0, 26.458 .. (5 * 26.458)]]
-        writeSvg "06.svg" $
-          let mkArrow :: Float -> [Float] -> Float -> Element
-              mkArrow _ [] _ = mempty
-              mkArrow x (factor : fs) y = (toElement $ Arrow (Point x y) factor) <> mkArrow (x + factor * 26.458) fs y
-           in g_ [] $ mconcat $
-                P.map
-                  (mkArrow 0 [1.377, 0.66, 1.377, 0.66, 1, 1])
-                  [y | y <- [0, 21.167 .. (7 * 21.167)]]
-        -- this seemed too complicated to me
-        -- writeSvg "07.svg" $
-        --   let mkArrow :: Float -> [Float] -> Float -> Element
-        --       mkArrow _ [] _ = mempty
-        --       mkArrow x (factor : fs) y = (toElement $ Arrow (Point x y) factor) <> mkArrow (x + factor * 26.458) fs y
-        --       mkLine :: [Float] -> Element
-        --       mkLine [] = mempty
-        --       mkLine (yfactor:fs) = mkArrow yfactor 0 [1.377, 0.66, 1.377, 0.66, 1, 1] <> mkLine fs
-        --    in g_ [] $
-        --           mkLine [y | y <- [0, 21.167 .. (7 * 21.167)]]
-        writeSvg "08.svg" $
-          let -- how many iterations do we want to do in x-direction?
-              xi = 6
-              f :: Float -> [Either Float Float] -> [Element]
-              f _ [] = mempty
-              f state ((Left y) : ls) = (toElement $ ThinArrowRow (Point 0 state) xi) : (f (state + y) ls)
-              f state ((Right y) : ls) = (toElement $ InvertedArrowRow (Point 0 state) xi) : (f (state + y) ls)
-           in g_
-                [ Transform_ <<- translate 50 50
-                    <> scale 2 2
-                ]
-                $ mconcat
-                $ f
-                  0
-                  [ Left 8,
-                    Left 6,
-                    Right 8,
-                    Right 6,
-                    Left 8,
-                    Left 6,
-                    Right 8,
-                    Right 6,
-                    Left 8,
-                    Left 6
-                  ]
+pfeile01 :: Element
+pfeile01 =
+  let mkTriangle (point, Y) = toElement $ Triangle point 60 15
+      mkTriangle (_, N) = mempty
+   in g_ [] $ mconcat $ P.map mkTriangle
+        $ P.zip [(Point x y) | y <- [0, 30 .. 200], x <- [0, 15 .. (15 * 11)]]
+        $ [Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y]
+          ++ [Y, Y, N, Y, N, N, Y, Y, N, Y, N, Y]
+          ++ [Y, N, Y, N, Y, Y, N, N, Y, N, Y, Y]
+          ++ [Y, Y, N, Y, N, N, Y, Y, N, Y, N, Y]
+          ++ [Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y]
+
+pfeile02 :: Element
+pfeile02 =
+  g_
+    [ Transform_ <<- rotateAround (-45) 90 80
+    ]
+    $ mconcat
+    $ P.map
+      toElement
+      [ Triangle (Point 60 60) 160 (-60),
+        Triangle (Point 120 60) 160 (-60),
+        Triangle (Point 180 60) 160 (-60)
+      ]
+
+pfeile03 :: Element
+pfeile03 =
+  g_
+    [ Transform_ <<- rotateAround (-45) 90 80
+    ]
+    $ mconcat
+    $ P.map
+      toElement
+      [ Triangle (Point 70 70) 140 (-70),
+        Triangle (Point 140 70) 140 (-70),
+        Triangle (Point 210 70) 140 (-70)
+      ]
+
+pfeile04 :: Element
+pfeile04 =
+  let mkArrow p = toElement $ NormalArrow p
+   in g_ [] $ mconcat $
+        P.map
+          mkArrow
+          [(Point x y) | y <- [0, 21.167 .. (7 * 21.167)], x <- [0, 26.458 .. (5 * 26.458)]]
+
+pfeile05 :: Element
+pfeile05 =
+  let mkArrow :: Float -> [Float] -> Float -> Element
+      mkArrow _ [] _ = mempty
+      mkArrow x (factor : fs) y = (toElement $ Arrow (Point x y) factor) <> mkArrow (x + factor * 26.458) fs y
+   in g_ [] $ mconcat $
+        P.map
+          (mkArrow 0 [1.377, 0.66, 1.377, 0.66, 1, 1])
+          [y | y <- [0, 21.167 .. (7 * 21.167)]]
+
+pfeile06 :: Element
+pfeile06 =
+  let -- how many iterations do we want to do in x-direction?
+      xi = 6
+      f :: Float -> [Either Float Float] -> [Element]
+      f _ [] = mempty
+      f state ((Left y) : ls) = (toElement $ ThinArrowRow (Point 0 state) xi) : (f (state + y) ls)
+      f state ((Right y) : ls) = (toElement $ InvertedArrowRow (Point 0 state) xi) : (f (state + y) ls)
+   in g_
+        [ Transform_ <<- translate 50 50
+            <> scale 2 2
+        ]
+        $ mconcat
+        $ f
+          0
+          [ Left 8,
+            Left 6,
+            Right 8,
+            Right 6,
+            Left 8,
+            Left 6,
+            Right 8,
+            Right 6,
+            Left 8,
+            Left 6
+          ]

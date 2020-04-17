@@ -11,12 +11,6 @@ boxSize = 30
 showI :: Int -> Text
 showI i = pack (show i)
 
--- basic function to generate a svg document
-svg :: Element -> Element
-svg content =
-  doctype
-    <> with (svg11_ content) [Version_ <<- "1.1", Width_ <<- "200", Height_ <<- "200"]
-
 -- 30*30
 -- The basic rectangle
 basicRect :: RealFloat a => (a, a) -> Element
@@ -55,8 +49,5 @@ randomQuad (x, y) =
         Stroke_ <<- "none"
       ]
 
-generateSvg :: IO ()
-generateSvg = do
-  let writeSvg f g = renderToFile f g
-   in writeSvg "./cache/fläche-01.svg" $ svg $
-        basicRectGrid <> randomQuad (15, 15)
+fläche01 :: Element
+fläche01 = basicRectGrid <> randomQuad (15, 15)
