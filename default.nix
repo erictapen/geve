@@ -10,7 +10,7 @@ rec {
     mkDerivation {
       pname = "geve";
       version = "0.1.0.0";
-      src = ./.;
+      src = builtins.filterSource (path: _: builtins.match ".*\.nix|result.*|flake.lock" path == null) ./.;
       isLibrary = false;
       isExecutable = true;
       executableHaskellDepends = [
