@@ -5,3 +5,4 @@ archive
 *.svg
 stack.yaml.lock
 .stack-work
+flake.lock
