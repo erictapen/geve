@@ -5,6 +5,7 @@ module Fläche where
 import Data.Text
 import Graphics.Svg
 import Prelude as P
+import Text.Printf
 
 boxSize :: RealFloat a => a
 boxSize = 30
@@ -67,9 +68,9 @@ randomQuad (x, y) =
     $ path_
       [ D_
           <<- ( mA 0 0
-                  <> lA 0 10
-                  <> lA 10 10
-                  <> lA 10 0
+                  <> lA 0 30
+                  <> lA 30 30
+                  <> lA 30 0
                   <> z
               ),
         Fill_ <<- "white",
@@ -116,5 +117,48 @@ quads =
     Quad (Point 0 0) (Point 10 0) (Point 10 10) (Point 0 10)
   ]
 
+size = 15
+-- concat the sphere points for an nGone
+nGone_pts :: Float -> Float -> [(Float, Float)] -> [(Float, Float)]
+nGone_pts 0 _ final = final
+nGone_pts lft max lst = 
+  if max < 3
+    then error "nGone has to have at least three corners."
+  else
+    nGone_pts (lft - 1) max (lst <> [(size*sin((max-lft) * 2 * pi/max),
+                                      -size*cos((max-lft) * 2 * pi/max))])
+
+multi_lA :: [(Float, Float)] -> Text -> Text
+multi_lA [] final = final
+multi_lA (to_lA : rest) str = do
+  multi_lA rest (str <> lA (fst to_lA) (snd to_lA))
+
+nGone_pts_toString :: [(Float, Float)] -> Text
+nGone_pts_toString ((first, second) : rest) =
+  mA first second <>  (multi_lA rest empty) <> z
+
+nGone_toString :: Int -> Text
+nGone_toString n =
+  nGone_pts_toString $ nGone_pts ((fromIntegral n) :: Float) ((fromIntegral n) :: Float) []
+
+-- arbitrary polygone with n corners
+nGone :: RealFloat a => (Int, (a, a)) -> Element
+nGone (n, (x, y)) =
+  g_
+    [ Transform_ <<- translate x y
+    ]
+    $ path_
+      [ D_
+          <<- ( nGone_toString n
+              ),
+        Fill_ <<- "white",
+        Stroke_ <<- "none"
+      ]
+
+incGongrid :: Int -> Element
+incGongrid n = 
+  mconcat $
+    P.map nGone $ P.zip [3..39] [(x, y) | y <- [30, 65 .. 170], x <- [30, 65 .. 170] ]
+
 fläche01 :: Element
-fläche01 = basicRectGrid <> randomQuad (15, 15)
+fläche01 = basicRectGrid <> incGongrid 7
