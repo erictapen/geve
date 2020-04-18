@@ -75,8 +75,8 @@ nGone_toString n =
   nGone_pts_toString $ nGone_pts ((fromIntegral n) :: Float) ((fromIntegral n) :: Float) []
 
 -- arbitrary polygone with n corners
-nGone :: RealFloat a => Int -> (a, a) -> Element
-nGone n (x, y) =
+nGone :: RealFloat a => (Int, (a, a)) -> Element
+nGone (n, (x, y)) =
   g_
     [ Transform_ <<- translate x y
     ]
@@ -91,7 +91,7 @@ nGone n (x, y) =
 incGongrid :: Int -> Element
 incGongrid n = 
   mconcat $
-    Prelude.map (nGone n) [(x, y) | x <- [15, 50 .. 155], y <- [15, 50 .. 155]]
+    Prelude.map nGone $ Prelude.zip [3..39] [(x, y) | y <- [30, 65 .. 170], x <- [30, 65 .. 170] ]
 
 fläche01 :: Element
 fläche01 = basicRectGrid <> incGongrid 7
