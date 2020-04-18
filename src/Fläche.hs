@@ -164,10 +164,10 @@ nGone (n, (Point x y)) =
       ]
 
 incGongrid :: Int -> Element
-incGongrid n =
+incGongrid n = 
   mconcat
-    $ P.map nGone
-    $ P.zip [3 .. 39] [Point x y | y <- [30, 65 .. 170], x <- [30, 65 .. 170]]
+    $ P.map nGone 
+    $ P.zip [3..39] [Point x y | y <- [30, 65 .. 170], x <- [30, 65 .. 170] ]
 
 fläche01 :: Element
 fläche01 = basicRectGrid <> incGongrid 7
