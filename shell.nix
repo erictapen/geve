@@ -18,5 +18,6 @@ pkgs.mkShell {
     stack
     librsvg
     inkscape
+    ormolu
   ];
 }
