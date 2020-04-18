@@ -17,5 +17,6 @@ pkgs.mkShell {
     )
     stack
     librsvg
+    inkscape
   ];
 }
