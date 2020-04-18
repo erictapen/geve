@@ -4,8 +4,8 @@ module Fläche where
 
 import Data.Text
 import Graphics.Svg
-import Prelude as P
 import Text.Printf
+import Prelude as P
 
 boxSize :: RealFloat a => a
 boxSize = 30
@@ -60,8 +60,8 @@ basicRectGrid =
     $ P.zip [Point x y | y <- [15, 50 .. 155], x <- [15, 50 .. 155]] quads
 
 -- a quad with not so random dimensions
-randomQuad :: RealFloat a => (a, a) -> Element
-randomQuad (x, y) =
+randomQuad :: Point -> Element
+randomQuad (Point x y) =
   g_
     [ Transform_ <<- translate x y
     ]
@@ -118,15 +118,23 @@ quads =
   ]
 
 size = 15
+
 -- concat the sphere points for an nGone
 nGone_pts :: Float -> Float -> [(Float, Float)] -> [(Float, Float)]
 nGone_pts 0 _ final = final
-nGone_pts lft max lst = 
+nGone_pts lft max lst =
   if max < 3
     then error "nGone has to have at least three corners."
-  else
-    nGone_pts (lft - 1) max (lst <> [(size*sin((max-lft) * 2 * pi/max),
-                                      -size*cos((max-lft) * 2 * pi/max))])
+    else
+      nGone_pts
+        (lft - 1)
+        max
+        ( lst
+            <> [ ( size * sin ((max - lft) * 2 * pi / max),
+                   - size * cos ((max - lft) * 2 * pi / max)
+                 )
+               ]
+        )
 
 multi_lA :: [(Float, Float)] -> Text -> Text
 multi_lA [] final = final
@@ -135,15 +143,15 @@ multi_lA (to_lA : rest) str = do
 
 nGone_pts_toString :: [(Float, Float)] -> Text
 nGone_pts_toString ((first, second) : rest) =
-  mA first second <>  (multi_lA rest empty) <> z
+  mA first second <> (multi_lA rest empty) <> z
 
 nGone_toString :: Int -> Text
 nGone_toString n =
   nGone_pts_toString $ nGone_pts ((fromIntegral n) :: Float) ((fromIntegral n) :: Float) []
 
 -- arbitrary polygone with n corners
-nGone :: RealFloat a => (Int, (a, a)) -> Element
-nGone (n, (x, y)) =
+nGone :: (Int, Point) -> Element
+nGone (n, (Point x y)) =
   g_
     [ Transform_ <<- translate x y
     ]
@@ -156,9 +164,10 @@ nGone (n, (x, y)) =
       ]
 
 incGongrid :: Int -> Element
-incGongrid n = 
-  mconcat $
-    P.map nGone $ P.zip [3..39] [(x, y) | y <- [30, 65 .. 170], x <- [30, 65 .. 170] ]
+incGongrid n =
+  mconcat
+    $ P.map nGone
+    $ P.zip [3 .. 39] [Point x y | y <- [30, 65 .. 170], x <- [30, 65 .. 170]]
 
 fläche01 :: Element
 fläche01 = basicRectGrid <> incGongrid 7
