@@ -122,18 +122,18 @@ quads =
     Quad (Point 0 0) (Point 10 0) (Point 10 10) (Point 0 10)
   ]
 
-ptsOnSphere :: Float -> Point -> Float -> Int -> Int -> Point
-ptsOnSphere size (Point x y) rot max cur =
+ptsOnSphere :: Float -> Point -> Int -> Int -> Point
+ptsOnSphere size (Point x y) max cur =
   let cur_fl = ((fromIntegral cur) :: Float)
       max_fl = ((fromIntegral max) :: Float)
   in
-  Point (size * sin ((max_fl - cur_fl) * 2 * pi / max_fl + rot) + x) (- size * cos ((max_fl - cur_fl) * 2 * pi / max_fl + rot) + y)
+  Point (size * sin ((max_fl - cur_fl) * 2 * pi / max_fl) + x) (- size * cos ((max_fl - cur_fl) * 2 * pi / max_fl) + y)
 
-nGonFromInt :: Float -> Point -> Float -> Int -> Ngon
-nGonFromInt size point rot n =
+nGonFromInt :: Float -> Point -> Int -> Ngon
+nGonFromInt size point n =
   if n < 3
     then error "nGon has to have at least three corners."
-    else Ngon $ P.map (ptsOnSphere size point rot n) [0..n]
+    else Ngon $ P.map (ptsOnSphere size point n) [0..n]
 
 nGonsInc :: [Ngon]
 nGonsInc = 
