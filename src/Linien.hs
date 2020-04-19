@@ -46,7 +46,7 @@ instance ToElement Line where
         angle = atan2 (y2 - y1) (x2 - x1)
         -- the angle of the stroke ends is 90 degrees turned
         orthAngle = angle - (0.5 * pi)
-        -- division of 0..1 into the amount of segments we need
+        -- segmentation of 0..1 into the amount of segments we need
         fractionalSteps :: [Float]
         fractionalSteps = [0, (1 / (fromRational $ fromIntegral $ P.length thicknesses - 1)) .. 1]
         -- x and y  positions of points along the line
