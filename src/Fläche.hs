@@ -13,34 +13,39 @@ boxSize = 30
 showI :: Int -> Text
 showI i = pack (show i)
 
-data Quad = Quad Point Point Point Point
+multi_lA :: [Point] -> Text -> Text
+multi_lA [] final = final
+multi_lA ((Point x y) : rest) str = do
+  multi_lA rest (str <> lA x y)
+
+pts2path :: [Point] -> Text
+pts2path ((Point x y) : rest) =
+  mA x y <> (multi_lA rest empty) <> z
+
+data Ngon = Quad Point Point Point Point | Ngon [Point]
 
 data Point = Point Float Float
 
-instance ToElement Quad where
+instance ToElement Ngon where
   toElement
-    ( Quad
-        (Point x1 y1)
-        (Point x2 y2)
-        (Point x3 y3)
-        (Point x4 y4)
-      ) =
-      path_
-        [ D_
-            <<- ( mA x1 y1
-                    <> lA x2 y2
-                    <> lA x3 y3
-                    <> lA x4 y4
-                    <> z
-                ),
-          Fill_ <<- "white",
-          Stroke_ <<- "none"
-        ]
+    ( Ngon pts
+    ) =
+    path_
+      [ D_
+          <<- ( pts2path pts
+              ),
+        Fill_ <<- "white",
+        Stroke_ <<- "none"
+      ]
+
+  toElement
+    ( Quad p1 p2 p3 p4
+      ) = toElement( Ngon [p1, p2, p3, p4])
 
 -- 30*30
 -- The basic rectangle
-basicRect :: (Point, Quad) -> Element
-basicRect (Point x y, quad) =
+basicRect :: (Point, Ngon) -> Element
+basicRect (Point x y, nGon) =
   g_
     [ Transform_ <<- translate x y
     ]
@@ -50,14 +55,14 @@ basicRect (Point x y, quad) =
         Fill_ <<- "black",
         Stroke_ <<- "black"
       ]
-      <> toElement quad
+      <> toElement nGon
 
 -- the grid in which basic rectangles are aligned
-basicRectGrid :: Element
-basicRectGrid =
+basicRectGrid :: [Ngon] -> Element
+basicRectGrid nGons =
   mconcat
     $ P.map basicRect
-    $ P.zip [Point x y | y <- [15, 50 .. 155], x <- [15, 50 .. 155]] quads
+    $ P.zip [Point x y | y <- [15, 50 .. 155], x <- [15, 50 .. 155]] nGons
 
 -- a quad with not so random dimensions
 randomQuad :: Point -> Element
@@ -77,7 +82,7 @@ randomQuad (Point x y) =
         Stroke_ <<- "none"
       ]
 
-quads :: [Quad]
+quads :: [Ngon]
 quads =
   [ Quad (Point 0 0) (Point 10 0) (Point 10 10) (Point 0 10),
     Quad (Point 0 0) (Point 10 0) (Point 10 10) (Point 0 10),
@@ -117,57 +122,25 @@ quads =
     Quad (Point 0 0) (Point 10 0) (Point 10 10) (Point 0 10)
   ]
 
-size = 15
+ptsOnSphere :: Float -> Point -> Float -> Int -> Int -> Point
+ptsOnSphere size (Point x y) rot max cur =
+  let cur_fl = ((fromIntegral cur) :: Float)
+      max_fl = ((fromIntegral max) :: Float)
+  in
+  Point (size * sin ((max_fl - cur_fl) * 2 * pi / max_fl + rot) + x) (- size * cos ((max_fl - cur_fl) * 2 * pi / max_fl + rot) + y)
 
--- concat the sphere points for an nGone
-nGone_pts :: Float -> Float -> [(Float, Float)] -> [(Float, Float)]
-nGone_pts 0 _ final = final
-nGone_pts lft max lst =
-  if max < 3
-    then error "nGone has to have at least three corners."
-    else
-      nGone_pts
-        (lft - 1)
-        max
-        ( lst
-            <> [ ( size * sin ((max - lft) * 2 * pi / max),
-                   - size * cos ((max - lft) * 2 * pi / max)
-                 )
-               ]
-        )
+nGonFromInt :: Float -> Point -> Float -> Int -> Ngon
+nGonFromInt size point rot n =
+  if n < 3
+    then error "nGon has to have at least three corners."
+    else Ngon $ P.map (ptsOnSphere size point rot n) [0..n]
 
-multi_lA :: [(Float, Float)] -> Text -> Text
-multi_lA [] final = final
-multi_lA (to_lA : rest) str = do
-  multi_lA rest (str <> lA (fst to_lA) (snd to_lA))
-
-nGone_pts_toString :: [(Float, Float)] -> Text
-nGone_pts_toString ((first, second) : rest) =
-  mA first second <> (multi_lA rest empty) <> z
-
-nGone_toString :: Int -> Text
-nGone_toString n =
-  nGone_pts_toString $ nGone_pts ((fromIntegral n) :: Float) ((fromIntegral n) :: Float) []
-
--- arbitrary polygone with n corners
-nGone :: (Int, Point) -> Element
-nGone (n, (Point x y)) =
-  g_
-    [ Transform_ <<- translate x y
-    ]
-    $ path_
-      [ D_
-          <<- ( nGone_toString n
-              ),
-        Fill_ <<- "white",
-        Stroke_ <<- "none"
-      ]
-
-incGongrid :: Int -> Element
-incGongrid n = 
-  mconcat
-    $ P.map nGone 
-    $ P.zip [3..39] [Point x y | y <- [30, 65 .. 170], x <- [30, 65 .. 170] ]
+nGonsInc :: [Ngon]
+nGonsInc = 
+    P.map (nGonFromInt 10 (Point 15 15)) [3..39]
 
 fläche01 :: Element
-fläche01 = basicRectGrid <> incGongrid 7
+fläche01 = basicRectGrid nGonsInc
+
+fläche02 :: Element
+fläche02 = basicRectGrid quads
