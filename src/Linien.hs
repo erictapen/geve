@@ -46,7 +46,7 @@ instance ToElement Line where
         angle = atan2 (y2 - y1) (x2 - x1)
         -- the angle of the stroke ends is 90 degrees turned
         orthAngle = angle - (0.5 * pi)
-        -- division of 0..1 with the amount of steps we want to do
+        -- division of 0..1 into the amount of segments we need
         fractionalSteps :: [Float]
         fractionalSteps = [0, (1 / (fromRational $ fromIntegral $ P.length thicknesses - 1)) .. 1]
         -- x and y  positions of points along the line
@@ -63,11 +63,12 @@ instance ToElement Line where
         -- get the actual point that is drawn from a point along the line and the delta
         pathPoint :: Float -> (Float, Float, Float, Float) -> Text
         pathPoint factor (x, y, dx, dy) = lA (x + (factor * dx)) (y + (factor * dy))
+        pathPointM :: Float -> (Float, Float, Float, Float) -> Text
+        pathPointM factor (x, y, dx, dy) = mA (x + (factor * dx)) (y + (factor * dy))
      in path_
           [ D_
-              <<- ( mA x1 y1
-                      <> (mconcat $ P.map (pathPoint (-1)) pathPoints)
-                      <> lA x2 y2
+              <<- ( (pathPointM (-1) $ P.head pathPoints)
+                      <> (mconcat $ P.map (pathPoint (-1)) $ P.tail pathPoints)
                       <> (mconcat $ P.reverse $ P.map (pathPoint 1) pathPoints)
                       <> z
                   ),
