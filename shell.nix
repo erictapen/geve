@@ -19,5 +19,7 @@ pkgs.mkShell {
     librsvg
     inkscape
     ormolu
+    python3Packages.numpy
+    python3Packages.matplotlib
   ];
 }
