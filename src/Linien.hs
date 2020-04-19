@@ -86,6 +86,15 @@ data Circle
   = -- Just a data type to talk about circles.
     Circle Center Radius
 
+-- Yes, Circle also implements ToElement, even though it is almost never used as such
+instance ToElement Circle where
+  toElement (Circle (Point cx cy) r) =
+    circle_
+      [ Cx_ <<- showt cx,
+        Cy_ <<- showt cy,
+        R_ <<- showt r
+      ]
+
 -- LineCircles are circles that consist of lines…
 data LineCircle
   = -- A simple line circle with an outer and an inner radius and a constant thickness.
@@ -130,7 +139,20 @@ instance ToElement LineCircle where
                 thickness2
                 (center1 <> (Point (r1 * cos angle) (r1 * sin angle)))
                 (center2 <> (Point (r2 * cos angle) (r2 * sin angle)))
-       in mconcat $ P.map line $ zip3 angles thicknesses1 thicknesses2
+       in g_ [] $ mconcat $ P.map line $ zip3 angles thicknesses1 thicknesses2
+
+-- a circle out of dots
+data DotCircle = DotCircle Circle Amount (Float -> Radius)
+
+instance ToElement DotCircle where
+  toElement (DotCircle (Circle center radius) n dotRadius) =
+    let angles = [0, (2 * pi / n) .. 2 * pi]
+        dot :: Float -> Element
+        dot angle =
+          toElement
+            $ Circle (center <> Point (radius * cos angle) (radius * sin angle))
+            $ dotRadius angle
+     in g_ [] $ mconcat $ P.map dot angles
 
 -- Some points and premanufactured elements. Could be refactored later on.
 p1 = Point 0 0
@@ -184,22 +206,24 @@ linecircle3 :: Element
 linecircle3 =
   let center1 = Point 102 92
       center2 = Point 92 102
-      outer = \s -> 1 * (1 + sin (0.5 * pi + s))
-      inner = \s -> 1 * (1 + sin (1.0 * pi + s))
+      outerThickness = \s -> 1 * (1 + sin (0.5 * pi + s))
+      innerThickness = \s -> 1 * (1 + sin (1.0 * pi + s))
       n = 64
+      innerCircle = (Circle center1 75)
    in toElement
         ( VariableThicknessLineCircle
             (Circle center2 100)
-            (Circle center1 75)
+            innerCircle
             n
-            outer
-            inner
+            outerThickness
+            innerThickness
         )
+        <> toElement (DotCircle innerCircle n (\t -> (*) 0.5 $ innerThickness t))
         <> toElement
           ( VariableThicknessLineCircle
-              (Circle center1 75)
+              innerCircle
               (Circle center2 50)
               n
-              inner
-              outer
+              innerThickness
+              outerThickness
           )
