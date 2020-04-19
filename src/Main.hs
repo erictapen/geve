@@ -16,8 +16,38 @@ type Page = Element
 
 pages :: [Page]
 pages =
-  [ Fläche.fläche01
-    ]
+  [ D.distorsion10,
+    D.distorsion12,
+    D.distorsion13,
+    D.distorsion14,
+    D.distorsion15,
+    D.distorsion16,
+    D.distorsion17,
+    D.distorsion18,
+    D.distorsion19,
+    D.distorsion20,
+    D.distorsion21,
+    D.distorsion22,
+    D.distorsion23,
+    D.distorsion24,
+    D.distorsion25,
+    D.distorsion26,
+    D.distorsion27,
+    D.distorsion28,
+    D.distorsion29,
+    Fläche.fläche01,
+    Linien.lines,
+    Linien.linecircle1,
+    Linien.linecircle2,
+    Linien.linecircle3,
+    Pfeile.pfeile01,
+    Pfeile.pfeile02,
+    Pfeile.pfeile03,
+    Pfeile.pfeile04,
+    Pfeile.pfeile05,
+    Pfeile.pfeile06,
+    Raster.triangleRasterResult
+  ]
 
 lazyWriteSvg :: FilePath -> Page -> IO ()
 lazyWriteSvg f g =
@@ -27,7 +57,7 @@ lazyWriteSvg f g =
         when (forceRewrite || not fileExists) $ renderToFile file g
 
 forceRewrite :: Bool
-forceRewrite = True
+forceRewrite = False
 
 type PageNumber = Int
 
