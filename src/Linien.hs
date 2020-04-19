@@ -42,16 +42,27 @@ instance ToElement Line where
   toElement (ComplexLine (t : []) p1 p2) =
     toElement (ComplexLine [t, t] p1 p2)
   toElement (ComplexLine thicknesses (Point x1 y1) (Point x2 y2)) =
-    let angle = atan2 (y2 - y1) (x2 - x1) -- yeah, atan2 takes y first, then x…
-        orthAngle = angle - (0.5 * pi) -- the angle of the stroke ends is 90 degrees turned
+    let -- yeah, atan2 takes y first, then x…
+        angle = atan2 (y2 - y1) (x2 - x1)
+        -- the angle of the stroke ends is 90 degrees turned
+        orthAngle = angle - (0.5 * pi)
+        -- division of 0..1 with the amount of steps we want to do
+        fractionalSteps :: [Float]
         fractionalSteps = [0, (1 / (fromRational $ fromIntegral $ P.length thicknesses - 1)) .. 1]
-        xs = P.map (\f -> x1 + f * (x2 - x1)) fractionalSteps -- x positions of points along the line
+        -- x and y  positions of points along the line
+        xs :: [Float]
+        xs = P.map (\f -> x1 + f * (x2 - x1)) fractionalSteps
+        ys :: [Float]
         ys = P.map (\f -> y1 + f * (y2 - y1)) fractionalSteps
-        -- deltas to move points in x direction so we get thickness
+        -- deltas to move points in x and y direction so we get the thickness
         dxs = P.map (\t -> cos orthAngle * (t / 2)) thicknesses
         dys = P.map (\t -> sin orthAngle * (t / 2)) thicknesses
-        pathPoint factor (x, y, dx, dy) = lA (x + (factor * dx)) (y + (factor * dy))
+        -- points along the line and deltas
+        pathPoints :: [(Float, Float, Float, Float)]
         pathPoints = DL.zip4 xs ys dxs dys
+        -- get the actual point that is drawn from a point along the line and the delta
+        pathPoint :: Float -> (Float, Float, Float, Float) -> Text
+        pathPoint factor (x, y, dx, dy) = lA (x + (factor * dx)) (y + (factor * dy))
      in path_
           [ D_
               <<- ( mA x1 y1
