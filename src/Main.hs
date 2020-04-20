@@ -52,7 +52,6 @@ pages =
     Pfeile.pfeile04,
     Pfeile.pfeile05,
     Pfeile.pfeile06,
-    Raster.triangleRasterResult
   ]
 
 lazyWriteSvg :: FilePath -> Page -> IO ()
