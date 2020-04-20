@@ -120,10 +120,10 @@ data Draw = Y | N
 
 pfeile01 :: Element
 pfeile01 =
-  let mkTriangle (point, Y) = toElement $ Triangle point 60 15
+  let mkTriangle (point, Y) = toElement $ Triangle point 40 10
       mkTriangle (_, N) = mempty
    in g_ [] $ mconcat $ P.map mkTriangle
-        $ P.zip [(Point x y) | y <- [0, 30 .. 200], x <- [0, 15 .. (15 * 11)]]
+        $ P.zip [(Point x y) | y <- [40, 60 .. 160], x <- [45, 55 .. 155]]
         $ [Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y]
           ++ [Y, Y, N, Y, N, N, Y, Y, N, Y, N, Y]
           ++ [Y, N, Y, N, Y, Y, N, N, Y, N, Y, Y]

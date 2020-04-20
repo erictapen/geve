@@ -18,14 +18,17 @@ showF f = pack $ show f
 
 type Page = Element
 
+move :: Float -> Float -> Element -> Element
+move x y e = g_ [ Transform_ <<- translate x y ] e
+
 pages :: [Page]
 pages =
   [ frontPage,
     mempty,
     D.distorsion10,
-    D.distorsion12,
+    Main.move (-200) 0 D.distorsion12,
     D.distorsion13,
-    D.distorsion14,
+    Main.move (-200) 0 D.distorsion14,
     D.distorsion15,
     D.distorsion16,
     D.distorsion17,
@@ -34,24 +37,23 @@ pages =
     D.distorsion20,
     D.distorsion21,
     D.distorsion22,
-    D.distorsion23,
-    D.distorsion24,
+    Main.move (100) 0 D.distorsion23,
+    Main.move (22) 0 D.distorsion24,
     D.distorsion25,
     D.distorsion26,
     D.distorsion27,
-    D.distorsion28,
-    D.distorsion29,
+    Main.move (-200) 0 D.distorsion28,
+    Main.move (150) 0 D.distorsion29,
     Fläche.fläche01,
-    Linien.lines,
     Linien.linecircle1,
     Linien.linecircle2,
     Linien.linecircle3,
     Pfeile.pfeile01,
     Pfeile.pfeile02,
     Pfeile.pfeile03,
-    Pfeile.pfeile04,
-    Pfeile.pfeile05,
-    Pfeile.pfeile06
+    Main.move 23 28 Pfeile.pfeile04,
+    Main.move 23 28 Pfeile.pfeile05,
+    Main.move (-11) (-11) Pfeile.pfeile06
   ]
 
 lazyWriteSvg :: FilePath -> Page -> IO ()

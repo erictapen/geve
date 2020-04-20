@@ -204,8 +204,8 @@ linecircle2 =
 
 linecircle3 :: Element
 linecircle3 =
-  let center1 = Point 102 92
-      center2 = Point 92 102
+  let center1 = Point 110 90
+      center2 = Point 100 100
       outerThickness = \s -> 1 * (1 + sin (0.5 * pi + s))
       innerThickness = \s -> 1 * (1 + sin (1.0 * pi + s))
       n = 64
