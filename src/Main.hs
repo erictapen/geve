@@ -21,6 +21,7 @@ type Page = Element
 pages :: [Page]
 pages =
   [ frontPage,
+    mempty,
     D.distorsion10,
     D.distorsion12,
     D.distorsion13,
