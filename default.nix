@@ -26,10 +26,13 @@ rec {
 
   pdf = pkgs.runCommand "geve-pdf" {
     buildInputs = with pkgs; [
-      librsvg # for rsvg-convert
+      inkscape
       pdftk
       geve
     ];
+    FONTCONFIG_FILE = pkgs.makeFontsConf {
+      fontDirectories = [ pkgs.fira ];
+    };
   } ''
     mkdir -p cache $out/pages
 
@@ -38,7 +41,7 @@ rec {
 
     # convert every SVG page to a singlepage PDF file
     for svgpage in cache/*.svg; do
-      rsvg-convert --format=pdf --output="$out/pages/$(basename $svgpage).pdf" "$svgpage"
+      inkscape --export-pdf="$out/pages/$(basename $svgpage).pdf" "$svgpage"
     done
 
     # concat all the PDF documents to one final result

@@ -19,6 +19,7 @@ pkgs.mkShell {
     librsvg # convert SVG to PDF files
     inkscape
     ormolu # haskell code formatting
+    pdftk
     python3Packages.numpy
     python3Packages.matplotlib
   ];
