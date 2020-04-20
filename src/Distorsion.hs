@@ -12,10 +12,6 @@ import Numeric.Noise.Perlin
 import System.Directory
 import Prelude as P
 
--- helper function for Text type
-showI :: Int -> Text
-showI i = pack $ show i
-
 -- helper fucntion for RealFloat type
 showR :: (Show a, RealFloat a) => a -> Text
 showR r = pack $ show r

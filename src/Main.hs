@@ -51,7 +51,7 @@ pages =
     Pfeile.pfeile03,
     Pfeile.pfeile04,
     Pfeile.pfeile05,
-    Pfeile.pfeile06,
+    Pfeile.pfeile06
   ]
 
 lazyWriteSvg :: FilePath -> Page -> IO ()
@@ -76,7 +76,8 @@ writePages number (p : ps) = do
 svg :: Element -> Element
 svg content =
   doctype
-    <> with (svg11_ content) [Version_ <<- "1.1", Width_ <<- "200", Height_ <<- "200"]
+    <> with (svg11_ content)
+       [Version_ <<- "1.1", Width_ <<- "200mm", Height_ <<- "200mm", ViewBox_ <<- "0 0 200 200"]
 
 frontPage :: Element
 frontPage =
@@ -94,11 +95,11 @@ frontPage =
           $ toElement text
       heading =
         text
-          [ Font_size_ <<- "26.6px"
+          [ Font_size_ <<- "26.6"
           ]
       footer =
         text
-          [ Font_size_ <<- "5.3px"
+          [ Font_size_ <<- "5.3"
           ]
    in heading "188" "30" "Grafische"
         <> heading "188" "58" "Elemente"
