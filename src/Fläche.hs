@@ -27,9 +27,7 @@ data Ngon = Quad Point Point Point Point | Ngon [Point]
 data Point = Point Float Float
 
 instance ToElement Ngon where
-  toElement
-    ( Ngon pts
-    ) =
+  toElement (Ngon pts) =
     path_
       [ D_
           <<- ( pts2path pts
@@ -37,10 +35,7 @@ instance ToElement Ngon where
         Fill_ <<- "white",
         Stroke_ <<- "none"
       ]
-
-  toElement
-    ( Quad p1 p2 p3 p4
-      ) = toElement( Ngon [p1, p2, p3, p4])
+  toElement (Quad p1 p2 p3 p4) = toElement (Ngon [p1, p2, p3, p4])
 
 -- 30*30
 -- The basic rectangle
@@ -126,18 +121,19 @@ ptsOnSphere :: Float -> Point -> Int -> Int -> Point
 ptsOnSphere size (Point x y) max cur =
   let cur_fl = ((fromIntegral cur) :: Float)
       max_fl = ((fromIntegral max) :: Float)
-  in
-  Point (size * sin ((max_fl - cur_fl) * 2 * pi / max_fl) + x) (- size * cos ((max_fl - cur_fl) * 2 * pi / max_fl) + y)
+   in Point
+        (size * sin ((max_fl - cur_fl) * 2 * pi / max_fl) + x)
+        (- size * cos ((max_fl - cur_fl) * 2 * pi / max_fl) + y)
 
 nGonFromInt :: Float -> Point -> Int -> Ngon
 nGonFromInt size point n =
   if n < 3
     then error "nGon has to have at least three corners."
-    else Ngon $ P.map (ptsOnSphere size point n) [0..n]
+    else Ngon $ P.map (ptsOnSphere size point n) [0 .. n]
 
 nGonsInc :: [Ngon]
-nGonsInc = 
-    P.map (nGonFromInt 10 (Point 15 15)) [3..39]
+nGonsInc =
+  P.map (nGonFromInt 10 (Point 15 15)) [3 .. 39]
 
 fläche01 :: Element
 fläche01 = basicRectGrid nGonsInc
