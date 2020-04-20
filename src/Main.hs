@@ -41,7 +41,7 @@ pages =
     Main.move (22) 0 D.distorsion24,
     D.distorsion25,
     D.distorsion26,
-    D.distorsion27,
+    Main.move 10 0 D.distorsion27,
     Main.move (-200) 0 D.distorsion28,
     Main.move (150) 0 D.distorsion29,
     Fläche.fläche01,

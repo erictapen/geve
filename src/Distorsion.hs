@@ -217,7 +217,7 @@ distorsion24 =
   toElement $
     LineDistorsion
       { pNoise = mkPerlinWithScale 420 10 0.008,
-        thickness = 0.20,
+        thickness = 0.10,
         xSpace = mkXSpace 0.5
       }
 
