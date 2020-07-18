@@ -50,4 +50,26 @@ rec {
     pdftk $out/pages/*.pdf cat output $out/geve.pdf
   '';
 
+  sputnik = pkgs.runCommand "sputnik-pdf" {
+    buildInputs = with pkgs; [ pdftk ];
+  } ''
+    mkdir -p $out
+
+    pdftk \
+      ${pdf}/pages/page001.svg.pdf \
+      ${pdf}/pages/page004.svg.pdf \
+      ${pdf}/pages/page005.svg.pdf \
+      ${pdf}/pages/page008.svg.pdf \
+      ${pdf}/pages/page009.svg.pdf \
+      ${pdf}/pages/page013.svg.pdf \
+      ${pdf}/pages/page014.svg.pdf \
+      ${pdf}/pages/page015.svg.pdf \
+      ${pdf}/pages/page016.svg.pdf \
+      ${pdf}/pages/page020.svg.pdf \
+      ${pdf}/pages/page021.svg.pdf \
+      ${pdf}/pages/page029.svg.pdf \
+      ${pdf}/pages/page031.svg.pdf \
+      cat output $out/sputnik.pdf
+  '';
+
 }
