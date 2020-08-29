@@ -50,7 +50,7 @@ rec {
     pdftk $out/pages/*.pdf cat output $out/geve.pdf
   '';
 
-  sputnik = pkgs.runCommand "sputnik-pdf" {
+  sputnik-auswahl = pkgs.runCommand "sputnik-auswahl-pdf" {
     buildInputs = with pkgs; [ pdftk ];
   } ''
     mkdir -p $out
