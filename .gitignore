@@ -6,3 +6,4 @@ archive
 stack.yaml.lock
 .stack-work
 flake.lock
+!preview.png
