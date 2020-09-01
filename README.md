@@ -6,7 +6,7 @@ Abgabe für den Kurs *Grafische Elemente & visuelle Effekte* im Wintersemester 1
 
 ## Building the book
 
-This book is generated from source using the [Nix](https://nixos.org/nix) tool. If you have Nix installed, you can generate the book either as a normal Nix derivation or as an exerimental [Nix flake](https://github.com/NixOS/rfcs/pull/49). Both methodes have been tested against the `nixos-20.03` branch of [Nixpkgs](https://github.com/NixOS/nixpkgs/).
+This book is generated from source using the [Nix](https://nixos.org/nix) tool. If you have Nix installed, you can generate the book using the exerimental [flake](https://github.com/NixOS/rfcs/pull/49) feature.
 
 ### Building as a Nix flake
 

@@ -1,6 +1,8 @@
 {
   description = "Results of 'Grafische Elemente & visuelle Effekte'";
 
+  inputs.nixpkgs.url = "github:NixOS/Nixpkgs/nixos-unstable";
+
   outputs =
     { self
     , nixpkgs
@@ -59,8 +61,8 @@
                 # convert every SVG page to a singlepage PDF file
                 for svgpage in cache/*.svg; do
                   cp $svgpage $out/pages/$(basename $svgpage)
-                  inkscape --export-pdf="$out/pages/$(basename $svgpage).pdf" "$svgpage"
-                  inkscape --export-dpi=300 --export-background=ffffff --export-png="$out/pages/$(basename $svgpage).png" "$svgpage"
+                  inkscape --export-filename="$out/pages/$(basename $svgpage).pdf" "$svgpage"
+                  inkscape --export-dpi=300 --export-background=ffffff --export-filename="$out/pages/$(basename $svgpage).png" "$svgpage"
                 done
 
                 # concat all the PDF documents to one final result
@@ -100,13 +102,10 @@
                 (
                   pkgs.haskellPackages.ghcWithPackages (
                     p: with p; [
-                      diagrams
-                      SVGFonts
-                      svg-builder
-                      JuicyPixels
-                      either-unwrap
+                      directory
                       hsnoise
-                      Noise
+                      svg-builder
+                      text
                     ]
                   )
                 )
