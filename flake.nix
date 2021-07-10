@@ -24,7 +24,7 @@
           in
             rec {
               geve = let
-                inherit (pkgs.haskell.packages.ghc865) mkDerivation base directory hsnoise svg-builder text;
+                inherit (pkgs.haskell.packages.ghc8104) mkDerivation base directory hsnoise svg-builder text;
               in
                 mkDerivation {
                   pname = "geve";
@@ -40,7 +40,7 @@
                     text
                   ];
                   homepage = "https://erictapen.name/";
-                  license = pkgs.stdenv.lib.licenses.bsd3;
+                  license = pkgs.lib.licenses.bsd3;
                 };
 
               pdf = pkgs.runCommand "geve-pdf" {
