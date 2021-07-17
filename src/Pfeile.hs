@@ -121,46 +121,49 @@ pfeile01 :: Element
 pfeile01 =
   let mkTriangle (point, Y) = toElement $ Triangle point 40 10
       mkTriangle (_, N) = mempty
-   in g_ [] $ mconcat $
-     P.zipWith
-       (curry mkTriangle)
-       ([Point x y | y <- [40, 60 .. 160], x <- [45, 55 .. 155]])
-         ([Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y]
-          ++ [Y, Y, N, Y, N, N, Y, Y, N, Y, N, Y]
-          ++ [Y, N, Y, N, Y, Y, N, N, Y, N, Y, Y]
-          ++ [Y, Y, N, Y, N, N, Y, Y, N, Y, N, Y]
-          ++ [Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y])
+   in g_ [] $
+        mconcat $
+          P.zipWith
+            (curry mkTriangle)
+            ([Point x y | y <- [40, 60 .. 160], x <- [45, 55 .. 155]])
+            ( [Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y]
+                ++ [Y, Y, N, Y, N, N, Y, Y, N, Y, N, Y]
+                ++ [Y, N, Y, N, Y, Y, N, N, Y, N, Y, Y]
+                ++ [Y, Y, N, Y, N, N, Y, Y, N, Y, N, Y]
+                ++ [Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y]
+            )
 
 pfeile02 :: Element
 pfeile02 =
   g_
     [ Transform_ <<- rotateAround (-45) 90 80
     ]
-    $ mconcat
-    $ P.map
-      toElement
-      [ Triangle (Point 60 60) 160 (-60),
-        Triangle (Point 120 60) 160 (-60),
-        Triangle (Point 180 60) 160 (-60)
-      ]
+    $ mconcat $
+      P.map
+        toElement
+        [ Triangle (Point 60 60) 160 (-60),
+          Triangle (Point 120 60) 160 (-60),
+          Triangle (Point 180 60) 160 (-60)
+        ]
 
 pfeile03 :: Element
 pfeile03 =
   g_
     [ Transform_ <<- rotateAround (-45) 90 80
     ]
-    $ mconcat
-    $ P.map
-      toElement
-      [ Triangle (Point 70 70) 140 (-70),
-        Triangle (Point 140 70) 140 (-70),
-        Triangle (Point 210 70) 140 (-70)
-      ]
+    $ mconcat $
+      P.map
+        toElement
+        [ Triangle (Point 70 70) 140 (-70),
+          Triangle (Point 140 70) 140 (-70),
+          Triangle (Point 210 70) 140 (-70)
+        ]
 
 pfeile04 :: Element
 pfeile04 =
   let mkArrow p = toElement $ NormalArrow p
-   in g_ [] $ mconcat $
+   in g_ [] $
+        mconcat $
           [mkArrow (Point x y) | y <- [0, 21.167 .. (7 * 21.167)], x <- [0, 26.458 .. (5 * 26.458)]]
 
 pfeile05 :: Element
@@ -168,8 +171,9 @@ pfeile05 =
   let mkArrow :: Float -> [Float] -> Float -> Element
       mkArrow _ [] _ = mempty
       mkArrow x (factor : fs) y = toElement (Arrow (Point x y) factor) <> mkArrow (x + factor * 26.458) fs y
-   in g_ [] $ mconcat $
-        [mkArrow 0 [1.377, 0.66, 1.377, 0.66, 1, 1] y | y <- [0, 21.167 .. (7 * 21.167)]]
+   in g_ [] $
+        mconcat $
+          [mkArrow 0 [1.377, 0.66, 1.377, 0.66, 1, 1] y | y <- [0, 21.167 .. (7 * 21.167)]]
 
 pfeile06 :: Element
 pfeile06 =
@@ -183,17 +187,17 @@ pfeile06 =
         [ Transform_ <<- translate 50 50
             <> scale 2 2
         ]
-        $ mconcat
-        $ f
-          0
-          [ Left 8,
-            Left 6,
-            Right 8,
-            Right 6,
-            Left 8,
-            Left 6,
-            Right 8,
-            Right 6,
-            Left 8,
-            Left 6
-          ]
+        $ mconcat $
+          f
+            0
+            [ Left 8,
+              Left 6,
+              Right 8,
+              Right 6,
+              Left 8,
+              Left 6,
+              Right 8,
+              Right 6,
+              Left 8,
+              Left 6
+            ]

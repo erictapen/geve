@@ -149,9 +149,9 @@ instance ToElement DotCircle where
     let angles = [0, (2 * pi / n) .. 2 * pi]
         dot :: Float -> Element
         dot angle =
-          toElement
-            $ Circle (center <> Point (radius * cos angle) (radius * sin angle))
-            $ dotRadius angle
+          toElement $
+            Circle (center <> Point (radius * cos angle) (radius * sin angle)) $
+              dotRadius angle
      in g_ [] $ mconcat $ P.map dot angles
 
 -- Some points and premanufactured elements. Could be refactored later on.

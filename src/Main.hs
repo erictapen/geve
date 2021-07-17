@@ -19,7 +19,7 @@ showF f = pack $ show f
 type Page = Element
 
 move :: Float -> Float -> Element -> Element
-move x y = g_ [ Transform_ <<- translate x y ]
+move x y = g_ [Transform_ <<- translate x y]
 
 pages :: [Page]
 pages =
@@ -78,8 +78,9 @@ writePages number (p : ps) = do
 svg :: Element -> Element
 svg content =
   doctype
-    <> with (svg11_ content)
-       [Version_ <<- "1.1", Width_ <<- "200mm", Height_ <<- "200mm", ViewBox_ <<- "0 0 200 200"]
+    <> with
+      (svg11_ content)
+      [Version_ <<- "1.1", Width_ <<- "200mm", Height_ <<- "200mm", ViewBox_ <<- "0 0 200 200"]
 
 frontPage :: Element
 frontPage =

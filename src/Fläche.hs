@@ -29,7 +29,7 @@ data Point = Point Float Float
 instance ToElement Ngon where
   toElement (Ngon pts) =
     path_
-      [ D_ <<-  pts2path pts,
+      [ D_ <<- pts2path pts,
         Fill_ <<- "white",
         Stroke_ <<- "none"
       ]
@@ -52,10 +52,12 @@ basicRect (Point x y, nGon) =
 
 -- the grid in which basic rectangles are aligned
 basicRectGrid :: [Ngon] -> Element
-basicRectGrid ngons = mconcat $
-  P.zipWith
-    (curry basicRect)
-    ([Point x y | y <- [15, 50 .. 155], x <- [15, 50 .. 155]]) ngons
+basicRectGrid ngons =
+  mconcat $
+    P.zipWith
+      (curry basicRect)
+      ([Point x y | y <- [15, 50 .. 155], x <- [15, 50 .. 155]])
+      ngons
 
 -- a quad with not so random dimensions
 randomQuad :: Point -> Element

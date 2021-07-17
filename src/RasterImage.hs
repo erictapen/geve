@@ -33,4 +33,5 @@ main :: IO ()
 main = do
   image <- readImage "face.png"
   print $ quadRasterResult $ getPixelValue (fromRight image)
+
 -- putStrLn $ show $ getPixelValue (fromRight image) (0.0, 0.0)
