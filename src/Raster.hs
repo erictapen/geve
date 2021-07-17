@@ -51,7 +51,7 @@ rasterCircle factor getBrightness (x, y) =
   circle_
     [ Cx_ <<- showR x,
       Cy_ <<- showR y,
-      R_ <<- (showR $ (*) factor $ getBrightness (x / 30, y / 30))
+      R_ <<- showR ((*) factor $ getBrightness (x / 30, y / 30))
     ]
 
 -- one rasterization using circles on a rectangular grid
@@ -75,7 +75,7 @@ quadRaster getBrightness (stepsize, (x, y)) =
 quadRasterResult :: (Show a, Enum a, RealFloat a) => ((a, a) -> a) -> Element
 quadRasterResult getBrightness =
   clipPath
-    <> (mconcat $ P.map (quadRaster getBrightness) $ P.zip [1.0, 1.1 .. 3.4] boxCoordinates)
+    <> mconcat (P.zipWith (curry (quadRaster getBrightness)) [1.0, 1.1 .. 3.4] boxCoordinates)
 
 -- one simple dot which is a hexagon
 hexDot ::
@@ -111,11 +111,11 @@ hexRaster ::
   Element
 hexRaster getBrightness (size, (x, y)) =
   clipPath
-    <> ( g_
+    <> g_
            [ Transform_ <<- translate x y,
              Clip_path_ <<- "url(#clip)"
            ]
-           $ mconcat
+           (mconcat
            $ P.map (hexDot size getBrightness) coordSpace
        )
   where
@@ -132,8 +132,10 @@ hexRaster getBrightness (size, (x, y)) =
 hexRasterResult :: (Show a, Enum a, RealFloat a) => ((a, a) -> a) -> Element
 hexRasterResult getBrightness =
   mconcat
-    $ P.map (hexRaster getBrightness)
-    $ P.zip (P.take 25 [0.3, 0.45 ..]) boxCoordinates
+    $ P.zipWith
+      (curry (hexRaster getBrightness))
+      (P.take 25 [0.3, 0.45 ..])
+      boxCoordinates
 
 -- simple raster dot in the shape of a triangle
 triangleDot ::
@@ -145,17 +147,16 @@ triangleDot ::
 triangleDot size getBrightness (x, y) =
   path_
     [ D_
-        <<- if (f < size)
+        <<- if f < size
           then
-            ( -- white square with a black triangle
+             -- white square with a black triangle
               mA x y
                 <> lA (x + f) y
                 <> lA x (y + f)
                 <> lA x y
                 <> z
-            )
           else
-            ( -- black square with a white triangle cut out
+             -- black square with a white triangle cut out
               mA x y
                 <> lA (x + size) y
                 <> lA (x + size) (y + f')
@@ -163,7 +164,7 @@ triangleDot size getBrightness (x, y) =
                 <> lA x (y + size)
                 <> lA x y
                 <> z
-            ),
+            ,
       Fill_ <<- "black",
       Stroke_ <<- "black",
       Stroke_width_ <<- "0.01px"
@@ -180,13 +181,12 @@ triangleRaster ::
   Element
 -- triangleRaster getBrightness (size, (x, y)) = clipPath <> (g_ [
 triangleRaster getBrightness (size, (x, y)) =
-  ( g_
+   g_
       [ Transform_ <<- translate x y,
         Clip_path_ <<- "url(#clip)"
       ]
       $ mconcat
       $ P.map (triangleDot size getBrightness) coordSpace
-  )
   where
     range = [1, (1 + size) .. 31]
     coordSpace = [(x, y) | x <- range, y <- range]
@@ -196,5 +196,5 @@ triangleRasterResult :: Element
 triangleRasterResult =
   let getBrightness = \(_, _) -> 0.5
    in mconcat
-        $ P.map (triangleRaster getBrightness)
-        $ P.zip (P.take 25 [1.0, 1.20 ..]) boxCoordinates
+        $ P.zipWith (curry (triangleRaster getBrightness))
+            (P.take 25 [1.0, 1.20 ..]) boxCoordinates

@@ -1,4 +1,3 @@
-{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Pfeile where
@@ -103,7 +102,7 @@ instance ToElement Arrow where
                   <> addXY 6 3
                   <> addXY 6 2
                   <> addXY 10 4
-                  <> (invertedArrowRow (Point (x + 10) y) (iterations -1))
+                  <> invertedArrowRow (Point (x + 10) y) (iterations -1)
                   <> addXY 10 (-4)
                   <> addXY 6 (-2)
                   <> addXY 6 (-3)
@@ -112,7 +111,7 @@ instance ToElement Arrow where
     if iterations == 0
       then mempty
       else
-        (toElement $ ThinArrow $ Point x y)
+        toElement (ThinArrow $ Point x y)
           <> toElement (ThinArrowRow (Point (x + 10) y) (iterations -1))
 
 -- simple type to represent wether something should be drawn or not
@@ -122,13 +121,15 @@ pfeile01 :: Element
 pfeile01 =
   let mkTriangle (point, Y) = toElement $ Triangle point 40 10
       mkTriangle (_, N) = mempty
-   in g_ [] $ mconcat $ P.map mkTriangle
-        $ P.zip [(Point x y) | y <- [40, 60 .. 160], x <- [45, 55 .. 155]]
-        $ [Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y]
+   in g_ [] $ mconcat $
+     P.zipWith
+       (curry mkTriangle)
+       ([Point x y | y <- [40, 60 .. 160], x <- [45, 55 .. 155]])
+         ([Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y]
           ++ [Y, Y, N, Y, N, N, Y, Y, N, Y, N, Y]
           ++ [Y, N, Y, N, Y, Y, N, N, Y, N, Y, Y]
           ++ [Y, Y, N, Y, N, N, Y, Y, N, Y, N, Y]
-          ++ [Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y]
+          ++ [Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y])
 
 pfeile02 :: Element
 pfeile02 =
@@ -160,19 +161,15 @@ pfeile04 :: Element
 pfeile04 =
   let mkArrow p = toElement $ NormalArrow p
    in g_ [] $ mconcat $
-        P.map
-          mkArrow
-          [(Point x y) | y <- [0, 21.167 .. (7 * 21.167)], x <- [0, 26.458 .. (5 * 26.458)]]
+          [mkArrow (Point x y) | y <- [0, 21.167 .. (7 * 21.167)], x <- [0, 26.458 .. (5 * 26.458)]]
 
 pfeile05 :: Element
 pfeile05 =
   let mkArrow :: Float -> [Float] -> Float -> Element
       mkArrow _ [] _ = mempty
-      mkArrow x (factor : fs) y = (toElement $ Arrow (Point x y) factor) <> mkArrow (x + factor * 26.458) fs y
+      mkArrow x (factor : fs) y = toElement (Arrow (Point x y) factor) <> mkArrow (x + factor * 26.458) fs y
    in g_ [] $ mconcat $
-        P.map
-          (mkArrow 0 [1.377, 0.66, 1.377, 0.66, 1, 1])
-          [y | y <- [0, 21.167 .. (7 * 21.167)]]
+        [mkArrow 0 [1.377, 0.66, 1.377, 0.66, 1, 1] y | y <- [0, 21.167 .. (7 * 21.167)]]
 
 pfeile06 :: Element
 pfeile06 =
@@ -180,8 +177,8 @@ pfeile06 =
       xi = 6
       f :: Float -> [Either Float Float] -> [Element]
       f _ [] = mempty
-      f state ((Left y) : ls) = (toElement $ ThinArrowRow (Point 0 state) xi) : (f (state + y) ls)
-      f state ((Right y) : ls) = (toElement $ InvertedArrowRow (Point 0 state) xi) : (f (state + y) ls)
+      f state ((Left y) : ls) = toElement (ThinArrowRow (Point 0 state) xi) : f (state + y) ls
+      f state ((Right y) : ls) = toElement (InvertedArrowRow (Point 0 state) xi) : f (state + y) ls
    in g_
         [ Transform_ <<- translate 50 50
             <> scale 2 2

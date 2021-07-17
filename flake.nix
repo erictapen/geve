@@ -1,8 +1,6 @@
 {
   description = "Results of 'Grafische Elemente & visuelle Effekte'";
 
-  inputs.nixpkgs.url = "github:NixOS/Nixpkgs/nixos-unstable";
-
   outputs =
     { self
     , nixpkgs
@@ -110,6 +108,7 @@
                   )
                 )
                 stack
+                hlint
                 librsvg # convert SVG to PDF files
                 inkscape
                 ormolu # haskell code formatting

@@ -19,7 +19,7 @@ showF f = pack $ show f
 type Page = Element
 
 move :: Float -> Float -> Element -> Element
-move x y e = g_ [ Transform_ <<- translate x y ] e
+move x y = g_ [ Transform_ <<- translate x y ]
 
 pages :: [Page]
 pages =
@@ -37,13 +37,13 @@ pages =
     D.distorsion20,
     D.distorsion21,
     D.distorsion22,
-    Main.move (100) 0 D.distorsion23,
-    Main.move (22) 0 D.distorsion24,
+    Main.move 100 0 D.distorsion23,
+    Main.move 22 0 D.distorsion24,
     D.distorsion25,
     D.distorsion26,
     Main.move 10 0 D.distorsion27,
     Main.move (-200) 0 D.distorsion28,
-    Main.move (150) 0 D.distorsion29,
+    Main.move 150 0 D.distorsion29,
     Fläche.fläche01,
     Linien.linecircle1,
     Linien.linecircle2,

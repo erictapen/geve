@@ -39,7 +39,7 @@ instance ToElement Line where
     toElement (ComplexLine [t1, t2] p1 p2)
   toElement (ComplexLine [] p1 p2) =
     toElement (ComplexLine [1.0, 1.0] p1 p2)
-  toElement (ComplexLine (t : []) p1 p2) =
+  toElement (ComplexLine [t] p1 p2) =
     toElement (ComplexLine [t, t] p1 p2)
   toElement (ComplexLine thicknesses (Point x1 y1) (Point x2 y2)) =
     let -- yeah, atan2 takes y first, then x…
@@ -48,7 +48,7 @@ instance ToElement Line where
         orthAngle = angle - (0.5 * pi)
         -- segmentation of 0..1 into the amount of segments we need
         fractionalSteps :: [Float]
-        fractionalSteps = [0, (1 / (fromRational $ fromIntegral $ P.length thicknesses - 1)) .. 1]
+        fractionalSteps = [0, (1 / fromRational (fromIntegral $ P.length thicknesses - 1)) .. 1]
         -- x and y  positions of points along the line
         xs :: [Float]
         xs = P.map (\f -> x1 + f * (x2 - x1)) fractionalSteps
@@ -67,9 +67,9 @@ instance ToElement Line where
         pathPointM factor (x, y, dx, dy) = mA (x + (factor * dx)) (y + (factor * dy))
      in path_
           [ D_
-              <<- ( (pathPointM (-1) $ P.head pathPoints)
-                      <> (mconcat $ P.map (pathPoint (-1)) $ P.tail pathPoints)
-                      <> (mconcat $ P.reverse $ P.map (pathPoint 1) pathPoints)
+              <<- ( pathPointM (-1) (P.head pathPoints)
+                      <> mconcat (P.map (pathPoint (-1)) $ P.tail pathPoints)
+                      <> mconcat (P.reverse $ P.map (pathPoint 1) pathPoints)
                       <> z
                   ),
             Fill_ <<- "black",
@@ -137,8 +137,8 @@ instance ToElement LineCircle where
               TriangleLine
                 thickness1
                 thickness2
-                (center1 <> (Point (r1 * cos angle) (r1 * sin angle)))
-                (center2 <> (Point (r2 * cos angle) (r2 * sin angle)))
+                (center1 <> Point (r1 * cos angle) (r1 * sin angle))
+                (center2 <> Point (r2 * cos angle) (r2 * sin angle))
        in g_ [] $ mconcat $ P.map line $ zip3 angles thicknesses1 thicknesses2
 
 -- a circle out of dots
@@ -191,7 +191,7 @@ linecircle2 =
             (Circle centerPoint 100)
             64
             (\s -> 1 * (1 + sin (s + pi)))
-            (\s -> 1 * (1 + sin (s)))
+            (\s -> 1 * (1 + sin s))
         )
         <> toElement
           ( VariableThicknessLineCircle
@@ -199,7 +199,7 @@ linecircle2 =
               (Circle centerPoint 75)
               64
               (\s -> 1 * (1 + cos (s + pi)))
-              (\s -> 1 * (1 + cos (s)))
+              (\s -> 1 * (1 + cos s))
           )
 
 linecircle3 :: Element
@@ -209,7 +209,7 @@ linecircle3 =
       outerThickness = \s -> 1 * (1 + sin (0.5 * pi + s))
       innerThickness = \s -> 1 * (1 + sin (1.0 * pi + s))
       n = 64
-      innerCircle = (Circle center1 75)
+      innerCircle = Circle center1 75
    in toElement
         ( VariableThicknessLineCircle
             (Circle center2 100)
@@ -218,7 +218,7 @@ linecircle3 =
             outerThickness
             innerThickness
         )
-        <> toElement (DotCircle innerCircle n (\t -> (*) 0.5 $ innerThickness t))
+        <> toElement (DotCircle innerCircle n ((*) 0.5 . innerThickness))
         <> toElement
           ( VariableThicknessLineCircle
               innerCircle

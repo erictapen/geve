@@ -18,7 +18,7 @@ getPixelValue image (x, y) =
       absX = round $ (*) x $ fromIntegral width
       absY = round $ (*) y $ fromIntegral height
       inBounds = (0 <= absX) && (absX < width) && (0 <= absY) && (absY < height)
-      getValue (PixelRGB8 r g b) = div ((toInteger r) + (toInteger g) + (toInteger b)) 3
+      getValue (PixelRGB8 r g b) = div (toInteger r + toInteger g + toInteger b) 3
       px :: PixelRGB8
       px = pixelAt (convertRGB8 image) absX absY
       result = (/) ((-) 255 $ fromInteger $ toInteger $ getValue px) 255

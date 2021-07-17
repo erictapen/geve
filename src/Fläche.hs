@@ -13,14 +13,14 @@ boxSize = 30
 showI :: Int -> Text
 showI i = pack (show i)
 
-multi_lA :: [Point] -> Text -> Text
-multi_lA [] final = final
-multi_lA ((Point x y) : rest) str = do
-  multi_lA rest (str <> lA x y)
+multiLA :: [Point] -> Text -> Text
+multiLA [] final = final
+multiLA ((Point x y) : rest) str = do
+  multiLA rest (str <> lA x y)
 
 pts2path :: [Point] -> Text
 pts2path ((Point x y) : rest) =
-  mA x y <> (multi_lA rest empty) <> z
+  mA x y <> multiLA rest empty <> z
 
 data Ngon = Quad Point Point Point Point | Ngon [Point]
 
@@ -29,9 +29,7 @@ data Point = Point Float Float
 instance ToElement Ngon where
   toElement (Ngon pts) =
     path_
-      [ D_
-          <<- ( pts2path pts
-              ),
+      [ D_ <<-  pts2path pts,
         Fill_ <<- "white",
         Stroke_ <<- "none"
       ]
@@ -54,10 +52,10 @@ basicRect (Point x y, nGon) =
 
 -- the grid in which basic rectangles are aligned
 basicRectGrid :: [Ngon] -> Element
-basicRectGrid nGons =
-  mconcat
-    $ P.map basicRect
-    $ P.zip [Point x y | y <- [15, 50 .. 155], x <- [15, 50 .. 155]] nGons
+basicRectGrid ngons = mconcat $
+  P.zipWith
+    (curry basicRect)
+    ([Point x y | y <- [15, 50 .. 155], x <- [15, 50 .. 155]]) ngons
 
 -- a quad with not so random dimensions
 randomQuad :: Point -> Element
@@ -119,8 +117,8 @@ quads =
 
 ptsOnSphere :: Float -> Point -> Int -> Int -> Point
 ptsOnSphere size (Point x y) max cur =
-  let cur_fl = ((fromIntegral cur) :: Float)
-      max_fl = ((fromIntegral max) :: Float)
+  let cur_fl = (fromIntegral cur :: Float)
+      max_fl = (fromIntegral max :: Float)
    in Point
         (size * sin ((max_fl - cur_fl) * 2 * pi / max_fl) + x)
         (- size * cos ((max_fl - cur_fl) * 2 * pi / max_fl) + y)

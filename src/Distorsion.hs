@@ -18,7 +18,7 @@ showR r = pack $ show r
 
 -- function that introduces noise
 move :: Perlin -> (Double, Double) -> (Double, Double)
-move pNoise (x, y) = ((val x), (val y))
+move pNoise (x, y) = (val x, val y)
   where
     factor = 200.0
     val old = (+) old $ (*) factor $ noiseValue pNoise (x, y, 0)
@@ -35,7 +35,7 @@ dot pNoise radius move xy =
 
 -- Part of a line, moved by some noise function
 lineSegment :: Perlin -> (Double, Double) -> Double
-lineSegment pNoise (x, y) = (distort x)
+lineSegment pNoise (x, y) = distort x
   where
     factor = 300.0
     noise = noiseValue pNoise (x, y, 0)
@@ -47,7 +47,7 @@ line pNoise thickness x =
   path_
     [ D_
         <<- ( mA (lineSegment pNoise (x, 0)) 0
-                <> (mconcat $ P.map (\y -> lA (lineSegment pNoise (x, y)) y) $ P.tail [0, 2 .. 200])
+                <> mconcat (P.map (\y -> lA (lineSegment pNoise (x, y)) y) $ P.tail [0, 2 .. 200])
             ),
       Fill_ <<- "none",
       Stroke_ <<- "black",
@@ -76,8 +76,8 @@ data Distorsion
       }
 
 instance ToElement Distorsion where
-  toElement (LineDistorsion {pNoise, thickness, xSpace}) = g_ [] $ mconcat $ P.map (line pNoise thickness) xSpace
-  toElement (DotDistorsion {pNoise, radius, xySpace}) = g_ [] $ mconcat $ P.map (dot pNoise radius move) xySpace
+  toElement LineDistorsion {pNoise, thickness, xSpace} = g_ [] $ mconcat $ P.map (line pNoise thickness) xSpace
+  toElement DotDistorsion {pNoise, radius, xySpace} = g_ [] $ mconcat $ P.map (dot pNoise radius move) xySpace
 
 mkPerlin seed octaves = mkPerlinWithScale seed octaves 0.001
 
