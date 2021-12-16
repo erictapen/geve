@@ -1,6 +1,8 @@
 {
   description = "Results of 'Grafische Elemente & visuelle Effekte'";
 
+  inputs.nixpkgs.url = "github:NixOS/Nixpkgs/nixos-unstable";
+
   outputs =
     { self
     , nixpkgs
@@ -22,7 +24,7 @@
           in
             rec {
               geve = let
-                inherit (pkgs.haskell.packages.ghc8104) mkDerivation base directory hsnoise svg-builder text;
+                inherit (pkgs.haskell.packages.ghc8107) mkDerivation base directory hsnoise svg-builder text;
               in
                 mkDerivation {
                   pname = "geve";
