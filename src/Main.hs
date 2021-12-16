@@ -109,7 +109,7 @@ frontPage =
         <> heading "188" "86" "& visuelle"
         <> heading "188" "114" "Effekte"
         <> footer "188" "182" "bei Prof. Klaus Keller, WS 2019/2020, FH Potsdam"
-        <> footer "188" "188" "Abgabe Justin Humm, 3. Semester Kommunikationsdesign"
+        <> footer "188" "188" "Abgabe Kerstin Humm, 3. Semester Kommunikationsdesign"
 
 main :: IO ()
 main = do

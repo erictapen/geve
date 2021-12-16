@@ -5,9 +5,9 @@ description:         End result for the course 'Grafische Elemente & visuelle Ef
 homepage:            https://erictapen.name/
 license:             BSD3
 license-file:        LICENSE
-author:              Justin Humm
+author:              Kerstin Humm
 maintainer:          mail@erictapen.name
-copyright:           2020 Justin Humm
+copyright:           2020 Kerstin Humm
 category:            Web
 build-type:          Simple
 cabal-version:       >=1.10
